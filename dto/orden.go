@@ -1,4 +1,4 @@
-package dto
+package coredto
 
 type Orden struct {
 	Campo string `json:"campo,omitempty"`

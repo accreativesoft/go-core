@@ -1,4 +1,4 @@
-package srv
+package coresrv
 
 import (
 	"go-core/util"

@@ -1,4 +1,4 @@
-package dto
+package coredto
 
 type Filtro struct {
 	Campo      string `json:"campo,omitempty"`

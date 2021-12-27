@@ -1,4 +1,4 @@
-package cons
+package corecons
 
 const (
 	STARTS_WITH           = "STARTS_WITH"
