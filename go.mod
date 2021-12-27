@@ -1,4 +1,4 @@
-module go-core
+module github.com/accreativesoft/go-core
 
 go 1.17
 
