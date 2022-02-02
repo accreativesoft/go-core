@@ -3,8 +3,8 @@ package coredto
 import "strconv"
 
 type Query struct {
-	PrimerResultado int      `json:"campo,omitempty"`
-	ResultadoMaximo int      `json:"username,omitempty"`
+	PrimerResultado int      `json:"primerResultado,omitempty"`
+	ResultadoMaximo int      `json:"resultadoMaximo,omitempty"`
 	FiltroGlobal    string   `json:"filtroGlobal,omitempty"`
 	Campos          []string `json:"campos,omitempty"`
 	Ordenamientos   []Orden  `json:"ordenamientos,omitempty"`
@@ -26,22 +26,22 @@ func (query *Query) AddOrden(campo string, orden int) {
 	query.Ordenamientos = append(query.Ordenamientos, ordenTmp)
 }
 
-func (query *Query) AddFiltro(campo string, operador string, valor string) {
+func (query *Query) AddFiltro(campo string, operador string, valor interface{}) {
 	filtroTmp := *new(Filtro)
 	filtroTmp.NewFiltro(campo, operador, valor)
 	query.Filtros = append(query.Filtros, filtroTmp)
 }
 
-func (query *Query) NewFiltroGrupoAnd(campo string, operador string, valor string, grupo string) *Filtro {
-	filtro := new(Filtro)
+func (query *Query) AddFiltroGrupoAnd(campo string, operador string, valor interface{}, grupo string) {
+	filtroTmp := *new(Filtro)
+	filtroTmp.NewFiltroGrupoAnd(campo, operador, valor, "AND~"+grupo+"~"+strconv.Itoa(query.Contador))
+	query.Filtros = append(query.Filtros, filtroTmp)
 	query.Contador++
-	filtro.NewFiltroGrupoAnd(campo, operador, valor, "AND~"+grupo+"~"+strconv.Itoa(query.Contador)+"~")
-	return filtro
 }
 
-func (query *Query) NewFiltroGrupoOr(campo string, operador string, valor string, grupo string) *Filtro {
-	filtro := new(Filtro)
+func (query *Query) AddFiltroGrupoOr(campo string, operador string, valor interface{}, grupo string) {
+	filtroTmp := *new(Filtro)
+	filtroTmp.NewFiltroGrupoOr(campo, operador, valor, "OR~"+grupo+"~"+strconv.Itoa(query.Contador))
+	query.Filtros = append(query.Filtros, filtroTmp)
 	query.Contador++
-	filtro.NewFiltroGrupoAnd(campo, operador, valor, "AND~"+grupo+"~"+strconv.Itoa(query.Contador)+"~")
-	return filtro
 }
