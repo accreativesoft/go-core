@@ -314,7 +314,7 @@ func GetJoins(entityRef interface{}, query coredto.Query) *orderedmap.OrderedMap
 	//Crea primer join de la entidad principal
 	join := Join{}
 	join.Alias = "e1"
-	join.Sql = "\n" + "FROM " + model + " e1"
+	join.Sql = "\n" + "FROM " + strcase.ToSnake(model) + " e1"
 	//joins[model] = &join
 	joins.Set(model, &join)
 

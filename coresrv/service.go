@@ -48,6 +48,10 @@ func (service *Service) BuscarPorId(entidadRef interface{}) error {
 	return corereflect.InvokeFuncReturnError(service.EntidadRef, "BuscarPorId", service.Trn, entidadRef)
 }
 
+func (service *Service) CargarDetalle(entidadRef interface{}) error {
+	return corereflect.InvokeFuncReturnError(service.EntidadRef, "CargarDetalle", service.Trn, entidadRef)
+}
+
 func (service *Service) Get(entidadRef interface{}, query coredto.Query) error {
 	return corereflect.InvokeFuncReturnError(service.EntidadRef, "Get", service.Trn, entidadRef, query)
 }

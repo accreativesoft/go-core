@@ -33,6 +33,7 @@ func (api *Api) InitRoutes(app *fiber.App) {
 	private.Put("/eliminarLista", api.eliminarLista)
 	private.Put("/numeroRegistros", api.numeroRegistros)
 	private.Put("/buscarPorId", api.buscarPorId)
+	private.Put("/cargarDetalle", api.cargarDetalle)
 	private.Put("/get", api.get)
 	private.Put("/getLista", api.getLista)
 }
@@ -200,6 +201,23 @@ func (api *Api) buscarPorId(ctx *fiber.Ctx) error {
 
 	//Ejecuto el servicio
 	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "BuscarPorId", objectRef)
+	if e != nil {
+		return e
+	}
+
+	return ctx.JSON(objectRef)
+}
+
+func (api *Api) cargarDetalle(ctx *fiber.Ctx) error {
+
+	//Ejecuto
+	objectRef, e := api.getObjectRef(ctx)
+	if e != nil {
+		return e
+	}
+
+	//Ejecuto el servicio
+	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "CargarDetalle", objectRef)
 	if e != nil {
 		return e
 	}

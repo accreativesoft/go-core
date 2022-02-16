@@ -14,13 +14,13 @@ import (
 )
 
 type Entidad struct {
-	Id                  uint       `gorm:"primary_key;auto_increment;not_null" json:"id,omitempty"`
+	Id                  int        `gorm:"primary_key;auto_increment;not_null" json:"id,omitempty"`
 	FechaCreacion       *time.Time `json:"fechaCreacion,omitempty"`
 	FechaModificacion   *time.Time `json:"fechaModificacion,omitempty"`
 	UsuarioCreacion     string     `gorm:"type:varchar(50)" json:"usuarioCreacion,omitempty"`
 	UsuarioModificacion string     `gorm:"type:varchar(50)" json:"usuarioModificacion,omitempty"`
-	IdEntidadOrigen     *uint      `json:"idEntidadOrigen,omitempty"`
-	Eliminado           bool       `gorm:"not null" json:"eliminado,omitempty"`
+	IdEntidadOrigen     *int       `json:"idEntidadOrigen,omitempty"`
+	Eliminado           bool       `gorm:"-" json:"eliminado,omitempty"`
 }
 
 func (entidad *Entidad) Insertar(trn *gorm.DB, entidadRef interface{}) error {
@@ -64,7 +64,7 @@ func (entidad *Entidad) Guardar(trn *gorm.DB, entidadRef interface{}) error {
 			}
 		}
 	} else {
-		if ent.FieldByName("Id").Uint() == 0 {
+		if ent.FieldByName("Id").Int() == 0 {
 			//Si el id es igual a cero inserta el registro
 			//entidad.Insertar(trn, entidadRef)
 			e := trn.Omit(clause.Associations).Create(entidadRef).Error
@@ -96,6 +96,15 @@ func (entidad *Entidad) NumeroRegistros(trn *gorm.DB, entidadRef interface{}, fi
 }
 
 func (entidad *Entidad) BuscarPorId(trn *gorm.DB, entidadRef interface{}) error {
+	id, _ := corereflect.GetField(entidadRef, "Id")
+	e := trn.First(entidadRef, id).Error
+	if e != nil {
+		return coreerror.NewError(coremsg.MSG_ERROR_SQL, e.Error())
+	}
+	return nil
+}
+
+func (entidad *Entidad) CargarDetalle(trn *gorm.DB, entidadRef interface{}) error {
 	id, _ := corereflect.GetField(entidadRef, "Id")
 	e := trn.First(entidadRef, id).Error
 	if e != nil {
