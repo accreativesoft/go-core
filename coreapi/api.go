@@ -5,9 +5,12 @@ import (
 	"reflect"
 
 	"github.com/accreativesoft/go-core/coredto"
+	"github.com/accreativesoft/go-core/coreerror"
+	"github.com/accreativesoft/go-core/coremsg"
 	"github.com/accreativesoft/go-core/corereflect"
 	"github.com/gofiber/fiber/v2"
 	jwtware "github.com/gofiber/jwt/v3"
+	"github.com/rs/zerolog/log"
 )
 
 const jwtSecret = "asecret"
@@ -143,7 +146,8 @@ func (api *Api) actualizarLista(ctx *fiber.Ctx) error {
 	update := coredto.Update{}
 	e := json.Unmarshal(ctx.Body(), &update)
 	if e != nil {
-		return e
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO)
+		return coreerror.NewError(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO, "")
 	}
 
 	//Ejecuto el servicio
@@ -161,7 +165,8 @@ func (api *Api) eliminarLista(ctx *fiber.Ctx) error {
 	delete := coredto.Delete{}
 	e := json.Unmarshal(ctx.Body(), &delete)
 	if e != nil {
-		return e
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO)
+		return coreerror.NewError(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO, "")
 	}
 
 	//Ejecuto el servicio
@@ -179,7 +184,8 @@ func (api *Api) numeroRegistros(ctx *fiber.Ctx) error {
 	var filtros []coredto.Filtro
 	e := json.Unmarshal(ctx.Body(), &filtros)
 	if e != nil {
-		return e
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO)
+		return coreerror.NewError(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO, "")
 	}
 
 	//Ejecuto el servicio
@@ -237,7 +243,8 @@ func (api *Api) get(ctx *fiber.Ctx) error {
 	query := coredto.Query{}
 	e := json.Unmarshal(ctx.Body(), &query)
 	if e != nil {
-		return e
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO)
+		return coreerror.NewError(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO, "")
 	}
 
 	//Ejecuto el servicio
@@ -259,7 +266,8 @@ func (api *Api) getLista(ctx *fiber.Ctx) error {
 	query := coredto.Query{}
 	e := json.Unmarshal(ctx.Body(), &query)
 	if e != nil {
-		return e
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO)
+		return coreerror.NewError(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO, "")
 	}
 
 	//Ejecuto el servicio
@@ -282,7 +290,8 @@ func (api *Api) getObjectRef(ctx *fiber.Ctx) (interface{}, error) {
 	//Cast del objeto
 	e := json.Unmarshal(ctx.Body(), objectRef)
 	if e != nil {
-		return nil, e
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO)
+		return nil, coreerror.NewError(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO, "")
 	}
 
 	//Cast del objeto

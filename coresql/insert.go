@@ -10,6 +10,7 @@ import (
 	"github.com/accreativesoft/go-core/corereflect"
 	"github.com/elliotchance/orderedmap"
 	"github.com/iancoleman/strcase"
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
 
@@ -38,7 +39,8 @@ func Insertar(trn *gorm.DB, entidadRef interface{}) error {
 		//Ejecuto y tomo el ultimo id insertado
 		rows, e := trn.Raw(sql, values...).Rows()
 		if e != nil {
-			return coreerror.NewError(coremsg.MSG_ERROR_SQL, e.Error())
+			log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+			return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 		}
 		for rows.Next() {
 			rows.Scan(&id)
@@ -47,12 +49,14 @@ func Insertar(trn *gorm.DB, entidadRef interface{}) error {
 		//Ejecuto el insert
 		e := trn.Exec(sql, values...).Error
 		if e != nil {
-			return coreerror.NewError(coremsg.MSG_ERROR_SQL, e.Error())
+			log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+			return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 		}
 		//Recupero el utimo insertado
 		rows, er := trn.Raw("select LAST_INSERT_ID()").Rows()
 		if er != nil {
-			return coreerror.NewError(coremsg.MSG_ERROR_SQL, er.Error())
+			log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+			return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 		}
 		for rows.Next() {
 			rows.Scan(&id)

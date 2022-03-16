@@ -9,6 +9,7 @@ import (
 	"github.com/accreativesoft/go-core/coremsg"
 	"github.com/accreativesoft/go-core/corereflect"
 	"github.com/accreativesoft/go-core/coresql"
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -24,17 +25,19 @@ type Entidad struct {
 }
 
 func (entidad *Entidad) Insertar(trn *gorm.DB, entidadRef interface{}) error {
-	e := trn.Omit(clause.Associations).Create(entidadRef).Error
+	e := trn.Create(entidadRef).Error
 	if e != nil {
-		return coreerror.NewError(coremsg.MSG_ERROR_SQL, e.Error())
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 	}
 	return nil
 }
 
 func (entidad *Entidad) Actualizar(trn *gorm.DB, entidadRef interface{}) error {
-	e := trn.Omit(clause.Associations).Save(entidadRef).Error
+	e := trn.Save(entidadRef).Error
 	if e != nil {
-		return coreerror.NewError(coremsg.MSG_ERROR_SQL, e.Error())
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 	}
 	return nil
 }
@@ -42,7 +45,8 @@ func (entidad *Entidad) Actualizar(trn *gorm.DB, entidadRef interface{}) error {
 func (entidad *Entidad) Eliminar(trn *gorm.DB, entidadRef interface{}) error {
 	e := trn.Omit(clause.Associations).Delete(entidadRef).Error
 	if e != nil {
-		return coreerror.NewError(coremsg.MSG_ERROR_SQL, e.Error())
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 	}
 	return nil
 }
@@ -58,25 +62,28 @@ func (entidad *Entidad) Guardar(trn *gorm.DB, entidadRef interface{}) error {
 			//Si el id es diferente de 0 elimina el registro
 			//entidad.Eliminar(trn, entidadRef)
 			ref, _ := corereflect.GetField(entidadRef, "Id")
-			e := trn.Omit(clause.Associations).Delete(entidadRef, ref).Error
+			e := trn.Delete(entidadRef, ref).Error
 			if e != nil {
-				return coreerror.NewError(coremsg.MSG_ERROR_SQL, e.Error())
+				log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+				return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 			}
 		}
 	} else {
 		if ent.FieldByName("Id").Int() == 0 {
 			//Si el id es igual a cero inserta el registro
 			//entidad.Insertar(trn, entidadRef)
-			e := trn.Omit(clause.Associations).Create(entidadRef).Error
+			e := trn.Create(entidadRef).Error
 			if e != nil {
-				return coreerror.NewError(coremsg.MSG_ERROR_SQL, e.Error())
+				log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+				return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 			}
 		} else {
 			//Si el id es diferente a cero actualiza el registro
 			//entidad.Actualizar(trn, entidadRef)
-			e := trn.Omit(clause.Associations).Save(entidadRef).Error
+			e := trn.Save(entidadRef).Error
 			if e != nil {
-				return coreerror.NewError(coremsg.MSG_ERROR_SQL, e.Error())
+				log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+				return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 			}
 		}
 	}
@@ -99,7 +106,8 @@ func (entidad *Entidad) BuscarPorId(trn *gorm.DB, entidadRef interface{}) error 
 	id, _ := corereflect.GetField(entidadRef, "Id")
 	e := trn.First(entidadRef, id).Error
 	if e != nil {
-		return coreerror.NewError(coremsg.MSG_ERROR_SQL, e.Error())
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 	}
 	return nil
 }
@@ -108,7 +116,8 @@ func (entidad *Entidad) CargarDetalle(trn *gorm.DB, entidadRef interface{}) erro
 	id, _ := corereflect.GetField(entidadRef, "Id")
 	e := trn.First(entidadRef, id).Error
 	if e != nil {
-		return coreerror.NewError(coremsg.MSG_ERROR_SQL, e.Error())
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 	}
 	return nil
 }

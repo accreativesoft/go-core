@@ -11,6 +11,7 @@ import (
 	"github.com/accreativesoft/go-core/corereflect"
 	"github.com/elliotchance/orderedmap"
 	"github.com/iancoleman/strcase"
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
 
@@ -34,7 +35,8 @@ func Eliminar(trn *gorm.DB, entityRef interface{}) error {
 	//Ejecuto la consulta
 	e := trn.Exec(sql, values...).Error
 	if e != nil {
-		return coreerror.NewError(coremsg.MSG_ERROR_SQL, e.Error())
+		log.Error().Msg(coremsg.MSG_ERROR_BACKEND)
+		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 	}
 	return nil
 }
@@ -56,7 +58,8 @@ func EliminarLista(trn *gorm.DB, entidadRef interface{}, delete coredto.Delete) 
 	//Ejecuto la consulta
 	e := trn.Exec(sql, values...).Error
 	if e != nil {
-		return coreerror.NewError(coremsg.MSG_ERROR_SQL, e.Error())
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 	}
 	return nil
 }

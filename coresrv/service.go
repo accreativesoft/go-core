@@ -11,6 +11,10 @@ type Service struct {
 	Trn        *gorm.DB
 }
 
+func (service *Service) Iniciar(entidadRef interface{}) error {
+	return nil
+}
+
 func (service *Service) Crear(entidadRef interface{}) error {
 	return nil
 }

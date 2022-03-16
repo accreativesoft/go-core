@@ -13,6 +13,7 @@ import (
 	"github.com/accreativesoft/go-core/corereflect"
 	"github.com/elliotchance/orderedmap"
 	"github.com/iancoleman/strcase"
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
 
@@ -43,7 +44,8 @@ func Get(trn *gorm.DB, entidadRef interface{}, query coredto.Query) error {
 	//Obtengo las filas
 	rows, e := trn.Raw(sql, values...).Rows()
 	if e != nil {
-		return coreerror.NewError(coremsg.MSG_ERROR_SQL, e.Error())
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 	}
 
 	//Formo el listado de valores a mapear con el resultado de la consulta
@@ -120,7 +122,8 @@ func GetLista(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRe
 	//Obtengo las filas
 	rows, e := trn.Raw(sql, values...).Rows()
 	if e != nil {
-		return coreerror.NewError(coremsg.MSG_ERROR_SQL, e.Error(), "caca")
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 	}
 
 	//Formo el listado de valores a mapear con el resultado de la consulta
@@ -208,7 +211,8 @@ func NumeroRegistros(trn *gorm.DB, entidadRef interface{}, filtros []coredto.Fil
 	//Obtengo las filas
 	rows, e := trn.Raw(sql, values...).Rows()
 	if e != nil {
-		return 0, coreerror.NewError(coremsg.MSG_ERROR_SQL, e.Error())
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+		return 0, coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 	}
 
 	//Valor
