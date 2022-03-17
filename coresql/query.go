@@ -1,6 +1,7 @@
 package coresql
 
 import (
+	"database/sql"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -48,60 +49,11 @@ func Get(trn *gorm.DB, entidadRef interface{}, query coredto.Query) error {
 		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 	}
 
-	//Formo el listado de valores a mapear con el resultado de la consulta
-	valores := make([]interface{}, 0)
-	GetValores(entidadRef, query, &valores)
-
-	//Campos a mapear
-	campos := query.Campos
-
-	//Tipo de onjecto
-	object := reflect.ValueOf(entidadRef).Elem()
-
-	for rows.Next() {
-
-		//Map de fila con los valores enviados
-		rows.Scan(valores...)
-
-		//Recorro los valores
-		for i, v := range valores {
-
-			// Recupero el campo y el valor
-			campo := campos[i]
-			valor := reflect.ValueOf(v).Elem()
-
-			// Realizo el split del campo (Ej. tipoBodega.ubicacion.idUbicacion)
-			propiedades := strings.Split(campo, ".")
-
-			//Recupero la primera propiedad
-			propiedad := strcase.ToCamel(propiedades[0])
-
-			if len(propiedades) == 1 {
-				//Set del valor de la propiedad ej. nombre
-				object.FieldByName(propiedad).Set(valor)
-			} else {
-
-				//Recupero el campo de la propiedad relacion
-				ref := object.FieldByName(propiedad)
-
-				//Recorro las propiidades de tipo relacion
-				for j := 1; j < len(propiedades); j++ {
-
-					//Obtengo la propiedad
-					propiedad = strcase.ToCamel(propiedades[j])
-
-					if j == len(propiedades)-1 {
-						//Set del valor para la ultima  propiedad
-						reflect.Indirect(ref).FieldByName(propiedad).Set(valor)
-					} else {
-						//Recupero la propiedad relacion
-						ref = reflect.Indirect(ref).FieldByName(propiedad)
-						//fmt.Println("ref--->", ref)
-					}
-				}
-			}
-		}
+	e = Map(entidadRef, query, rows)
+	if e != nil {
+		return e
 	}
+
 	return nil
 }
 
@@ -126,71 +78,9 @@ func GetLista(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRe
 		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 	}
 
-	//Formo el listado de valores a mapear con el resultado de la consulta
-	valores := make([]interface{}, 0)
-	GetValores(entidadRef, query, &valores)
-
-	//Campos a mapear
-	campos := query.Campos
-
-	//Tipo de onjecto
-	typeObject := reflect.TypeOf(entidadRef).Elem()
-
-	for rows.Next() {
-
-		//Map de fila con los valores enviados
-		rows.Scan(valores...)
-
-		//Creo objeto principal para llenar listado
-		objectRef := reflect.New(typeObject).Interface()
-
-		//Obtengo valor de la referecia objectRef
-		object := reflect.ValueOf(objectRef).Elem()
-
-		//Recorro los valores
-		for i, v := range valores {
-
-			// Recupero el campo y el valor
-			campo := campos[i]
-			valor := reflect.ValueOf(v).Elem()
-
-			// Realizo el split del campo (Ej. tipoBodega.ubicacion.idUbicacion)
-			propiedades := strings.Split(campo, ".")
-
-			//Recupero la primera propiedad
-			propiedad := strcase.ToCamel(propiedades[0])
-
-			if len(propiedades) == 1 {
-				//Set del valor de la propiedad ej. nombre
-				object.FieldByName(propiedad).Set(valor)
-			} else {
-
-				//Recupero el campo de la propiedad relacion
-				ref := object.FieldByName(propiedad)
-
-				//Recorro las propiidades de tipo relacion
-				for j := 1; j < len(propiedades); j++ {
-
-					//Obtengo la propiedad
-					propiedad = strcase.ToCamel(propiedades[j])
-
-					if j == len(propiedades)-1 {
-						//Set del valor para la ultima  propiedad
-						reflect.Indirect(ref).FieldByName(propiedad).Set(valor)
-					} else {
-						//Recupero la propiedad relacion
-						ref = reflect.Indirect(ref).FieldByName(propiedad)
-						//fmt.Println("ref--->", ref)
-					}
-				}
-			}
-		}
-
-		//Agrego el objeto a la lista
-		listaValor := reflect.ValueOf(listaRef).Elem()
-		objectValor := reflect.ValueOf(objectRef).Elem()
-		listaValor.Set(reflect.Append(listaValor, objectValor))
-
+	e = MapLista(entidadRef, listaRef, query, rows)
+	if e != nil {
+		return e
 	}
 
 	return nil
@@ -220,7 +110,11 @@ func NumeroRegistros(trn *gorm.DB, entidadRef interface{}, filtros []coredto.Fil
 
 	for rows.Next() {
 		//Map de fila con los valores enviados
-		rows.Scan(&valor)
+		e := rows.Scan(&valor)
+		if e != nil {
+			log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+			return 0, coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		}
 	}
 
 	return valor, nil
@@ -797,6 +691,10 @@ func GetValores(entidadRef interface{}, query coredto.Query, valores interface{}
 			var v string
 			objectValor := reflect.ValueOf(&v)
 			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "bool":
+			var v bool
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
 		default:
 			var v string
 			objectValor := reflect.ValueOf(&v)
@@ -819,4 +717,145 @@ func Sign(dialector string, secuencia *int) string {
 	default:
 		return sign
 	}
+}
+
+func Map(entidadRef interface{}, query coredto.Query, rows *sql.Rows) error {
+
+	//Formo el listado de valores a mapear con el resultado de la consulta
+	valores := make([]interface{}, 0)
+	GetValores(entidadRef, query, &valores)
+
+	//Campos a mapear
+	campos := query.Campos
+
+	//Tipo de onjecto
+	object := reflect.ValueOf(entidadRef).Elem()
+
+	for rows.Next() {
+
+		//Map de fila con los valores enviados
+		e := rows.Scan(valores...)
+		if e != nil {
+			log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+			return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		}
+
+		//Recorro los valores
+		for i, v := range valores {
+
+			// Recupero el campo y el valor
+			campo := campos[i]
+			valor := reflect.ValueOf(v).Elem()
+
+			// Realizo el split del campo (Ej. tipoBodega.ubicacion.idUbicacion)
+			propiedades := strings.Split(campo, ".")
+
+			//Recupero la primera propiedad
+			propiedad := strcase.ToCamel(propiedades[0])
+
+			if len(propiedades) == 1 {
+				//Set del valor de la propiedad ej. nombre
+				object.FieldByName(propiedad).Set(valor)
+			} else {
+
+				//Recupero el campo de la propiedad relacion
+				ref := object.FieldByName(propiedad)
+
+				//Recorro las propiidades de tipo relacion
+				for j := 1; j < len(propiedades); j++ {
+
+					//Obtengo la propiedad
+					propiedad = strcase.ToCamel(propiedades[j])
+
+					if j == len(propiedades)-1 {
+						//Set del valor para la ultima  propiedad
+						reflect.Indirect(ref).FieldByName(propiedad).Set(valor)
+					} else {
+						//Recupero la propiedad relacion
+						ref = reflect.Indirect(ref).FieldByName(propiedad)
+						//fmt.Println("ref--->", ref)
+					}
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func MapLista(entidadRef interface{}, listaRef interface{}, query coredto.Query, rows *sql.Rows) error {
+
+	//Formo el listado de valores a mapear con el resultado de la consulta
+	valores := make([]interface{}, 0)
+	GetValores(entidadRef, query, &valores)
+
+	//Campos a mapear
+	campos := query.Campos
+
+	//Tipo de onjecto
+	typeObject := reflect.TypeOf(entidadRef).Elem()
+
+	for rows.Next() {
+
+		//Map de fila con los valores enviados
+		e := rows.Scan(valores...)
+		if e != nil {
+			log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+			return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		}
+
+		//Creo objeto principal para llenar listado
+		objectRef := reflect.New(typeObject).Interface()
+
+		//Obtengo valor de la referecia objectRef
+		object := reflect.ValueOf(objectRef).Elem()
+
+		//Recorro los valores
+		for i, v := range valores {
+
+			// Recupero el campo y el valor
+			campo := campos[i]
+			valor := reflect.ValueOf(v).Elem()
+
+			// Realizo el split del campo (Ej. tipoBodega.ubicacion.idUbicacion)
+			propiedades := strings.Split(campo, ".")
+
+			//Recupero la primera propiedad
+			propiedad := strcase.ToCamel(propiedades[0])
+
+			if len(propiedades) == 1 {
+				//Set del valor de la propiedad ej. nombre
+				object.FieldByName(propiedad).Set(valor)
+			} else {
+
+				//Recupero el campo de la propiedad relacion
+				ref := object.FieldByName(propiedad)
+
+				//Recorro las propiidades de tipo relacion
+				for j := 1; j < len(propiedades); j++ {
+
+					//Obtengo la propiedad
+					propiedad = strcase.ToCamel(propiedades[j])
+
+					if j == len(propiedades)-1 {
+						//Set del valor para la ultima  propiedad
+						reflect.Indirect(ref).FieldByName(propiedad).Set(valor)
+					} else {
+						//Recupero la propiedad relacion
+						ref = reflect.Indirect(ref).FieldByName(propiedad)
+						//fmt.Println("ref--->", ref)
+					}
+				}
+			}
+		}
+
+		//Agrego el objeto a la lista
+		listaValor := reflect.ValueOf(listaRef).Elem()
+		objectValor := reflect.ValueOf(objectRef).Elem()
+		listaValor.Set(reflect.Append(listaValor, objectValor))
+
+	}
+
+	return nil
+
 }

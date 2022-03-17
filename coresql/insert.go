@@ -43,7 +43,11 @@ func Insertar(trn *gorm.DB, entidadRef interface{}) error {
 			return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 		}
 		for rows.Next() {
-			rows.Scan(&id)
+			e := rows.Scan(&id)
+			if e != nil {
+				log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+				return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+			}
 		}
 	default:
 		//Ejecuto el insert
@@ -59,7 +63,11 @@ func Insertar(trn *gorm.DB, entidadRef interface{}) error {
 			return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
 		}
 		for rows.Next() {
-			rows.Scan(&id)
+			e := rows.Scan(&id)
+			if e != nil {
+				log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+				return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+			}
 		}
 	}
 
