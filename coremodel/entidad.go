@@ -106,8 +106,10 @@ func (entidad *Entidad) BuscarPorId(trn *gorm.DB, entidadRef interface{}) error 
 	id, _ := corereflect.GetField(entidadRef, "Id")
 	e := trn.First(entidadRef, id).Error
 	if e != nil {
-		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		//log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+		v := reflect.ValueOf(entidadRef).Elem()
+		v.Set(reflect.Zero(v.Type()))
+		return nil
 	}
 	return nil
 }
@@ -116,16 +118,26 @@ func (entidad *Entidad) CargarDetalle(trn *gorm.DB, entidadRef interface{}) erro
 	id, _ := corereflect.GetField(entidadRef, "Id")
 	e := trn.First(entidadRef, id).Error
 	if e != nil {
-		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		//log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+		v := reflect.ValueOf(entidadRef).Elem()
+		v.Set(reflect.Zero(v.Type()))
+		return nil
 	}
 	return nil
 }
 
-func (entidad *Entidad) Get(trn *gorm.DB, entidadRef interface{}, query coredto.Query) error {
-	return coresql.Get(trn, entidadRef, query)
+func (entidad *Entidad) GetEntidad(trn *gorm.DB, entidadRef interface{}, query coredto.Query) error {
+	return coresql.GetEntidad(trn, entidadRef, query)
 }
 
-func (entidad *Entidad) GetLista(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRef interface{}) error {
-	return coresql.GetLista(trn, entidadRef, query, listaRef)
+func (entidad *Entidad) GetEntidadList(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRef interface{}) error {
+	return coresql.GetEntidadList(trn, entidadRef, query, listaRef)
+}
+
+func (entidad *Entidad) GetObjetoList(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRef interface{}) error {
+	return coresql.GetObjetoList(trn, entidadRef, query, listaRef)
+}
+
+func (entidad *Entidad) GetObjeto(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRef interface{}) error {
+	return coresql.GetObjeto(trn, entidadRef, query, listaRef)
 }

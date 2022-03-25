@@ -24,7 +24,7 @@ type Join struct {
 	Campos []string
 }
 
-func Get(trn *gorm.DB, entidadRef interface{}, query coredto.Query) error {
+func GetEntidad(trn *gorm.DB, entidadRef interface{}, query coredto.Query) error {
 
 	//Recupero el nombre del dialector
 	dialector := trn.Dialector.Name()
@@ -57,7 +57,7 @@ func Get(trn *gorm.DB, entidadRef interface{}, query coredto.Query) error {
 	return nil
 }
 
-func GetLista(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRef interface{}) error {
+func GetEntidadList(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRef interface{}) error {
 
 	//Recupero el nombre del dialector
 	dialector := trn.Dialector.Name()
@@ -81,6 +81,109 @@ func GetLista(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRe
 	e = MapLista(entidadRef, listaRef, query, rows)
 	if e != nil {
 		return e
+	}
+
+	return nil
+
+}
+
+func GetObjetoList(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRef interface{}) error {
+
+	//Recupero el nombre del dialector
+	dialector := trn.Dialector.Name()
+
+	//Recupero la sentencia select
+	sql := GetSql(dialector, entidadRef, query)
+
+	//Set de los parametros del sql
+	values := make([]interface{}, 0)
+	for _, filtro := range query.Filtros {
+		values = append(values, filtro.Valor)
+	}
+
+	//Obtengo las filas
+	rows, e := trn.Raw(sql, values...).Rows()
+	if e != nil {
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+	}
+
+	//Formo el listado de valores a mapear con el resultado de la consulta
+	valores := make([]interface{}, 0)
+	GetValores(entidadRef, query, &valores)
+
+	//Agrego el objeto a la lista
+	listaValor := reflect.ValueOf(listaRef).Elem()
+
+	for rows.Next() {
+
+		//Creo lista de objetos
+		objectRef := make([]interface{}, 0)
+
+		//Map de fila con los valores enviados
+		e := rows.Scan(valores...)
+		if e != nil {
+			log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+			return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		}
+
+		objectRef = append(objectRef, valores...)
+		objectValor := reflect.ValueOf(&objectRef).Elem()
+		listaValor.Set(reflect.Append(listaValor, objectValor))
+
+	}
+
+	return nil
+
+}
+
+func GetObjeto(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRef interface{}) error {
+
+	//Recupero el nombre del dialector
+	dialector := trn.Dialector.Name()
+
+	//Tomo solo un resultado
+	query.PrimerResultado = 0
+	query.ResultadoMaximo = 1
+
+	//Recupero la sentencia select
+	sql := GetSql(dialector, entidadRef, query)
+
+	//Set de los parametros del sql
+	values := make([]interface{}, 0)
+	for _, filtro := range query.Filtros {
+		values = append(values, filtro.Valor)
+	}
+
+	//Obtengo las filas
+	rows, e := trn.Raw(sql, values...).Rows()
+	if e != nil {
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+	}
+
+	//Formo el listado de valores a mapear con el resultado de la consulta
+	valores := make([]interface{}, 0)
+	GetValores(entidadRef, query, &valores)
+
+	//Agrego el objeto a la lista
+	listaValor := reflect.ValueOf(listaRef).Elem()
+
+	for rows.Next() {
+
+		//Map de fila con los valores enviados
+		e := rows.Scan(valores...)
+		if e != nil {
+			log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
+			return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		}
+
+		//Recorro los valores
+		for _, v := range valores {
+			objectValor := reflect.ValueOf(&v).Elem()
+			listaValor.Set(reflect.Append(listaValor, objectValor))
+		}
+
 	}
 
 	return nil
@@ -731,7 +834,11 @@ func Map(entidadRef interface{}, query coredto.Query, rows *sql.Rows) error {
 	//Tipo de onjecto
 	object := reflect.ValueOf(entidadRef).Elem()
 
+	i := 0
+
 	for rows.Next() {
+
+		i++
 
 		//Map de fila con los valores enviados
 		e := rows.Scan(valores...)
@@ -778,6 +885,11 @@ func Map(entidadRef interface{}, query coredto.Query, rows *sql.Rows) error {
 				}
 			}
 		}
+	}
+
+	if i == 0 {
+		v := reflect.ValueOf(entidadRef).Elem()
+		v.Set(reflect.Zero(v.Type()))
 	}
 
 	return nil

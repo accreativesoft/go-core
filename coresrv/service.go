@@ -56,10 +56,18 @@ func (service *Service) CargarDetalle(entidadRef interface{}) error {
 	return corereflect.InvokeFuncReturnError(service.EntidadRef, "CargarDetalle", service.Trn, entidadRef)
 }
 
-func (service *Service) Get(entidadRef interface{}, query coredto.Query) error {
-	return corereflect.InvokeFuncReturnError(service.EntidadRef, "Get", service.Trn, entidadRef, query)
+func (service *Service) GetEntidad(entidadRef interface{}, query coredto.Query) error {
+	return corereflect.InvokeFuncReturnError(service.EntidadRef, "GetEntidad", service.Trn, entidadRef, query)
 }
 
-func (service *Service) GetLista(listaRef interface{}, query coredto.Query) error {
-	return corereflect.InvokeFuncReturnError(service.EntidadRef, "GetLista", service.Trn, service.EntidadRef, query, listaRef)
+func (service *Service) GetEntidadList(listaRef interface{}, query coredto.Query) error {
+	return corereflect.InvokeFuncReturnError(service.EntidadRef, "GetEntidadList", service.Trn, service.EntidadRef, query, listaRef)
+}
+
+func (service *Service) GetObjetoList(listaRef interface{}, query coredto.Query) error {
+	return corereflect.InvokeFuncReturnError(service.EntidadRef, "GetObjetoList", service.Trn, service.EntidadRef, query, listaRef)
+}
+
+func (service *Service) GetObjeto(listaRef interface{}, query coredto.Query) error {
+	return corereflect.InvokeFuncReturnError(service.EntidadRef, "GetObjeto", service.Trn, service.EntidadRef, query, listaRef)
 }

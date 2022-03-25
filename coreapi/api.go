@@ -31,14 +31,16 @@ func (api *Api) InitRoutes(app *fiber.App) {
 	private.Put("/insertar", api.insertar)
 	private.Put("/eliminar", api.eliminar)
 	private.Put("/actualizar", api.actualizar)
-	private.Put("/guardar", api.guardar)
+	private.Post("/guardar", api.guardar)
 	private.Put("/actualizarLista", api.actualizarLista)
 	private.Put("/eliminarLista", api.eliminarLista)
 	private.Put("/numeroRegistros", api.numeroRegistros)
 	private.Put("/buscarPorId", api.buscarPorId)
 	private.Put("/cargarDetalle", api.cargarDetalle)
-	private.Put("/get", api.get)
-	private.Put("/getLista", api.getLista)
+	private.Put("/getEntidad", api.GetEntidad)
+	private.Put("/getEntidadList", api.getEntidadList)
+	private.Put("/getObjetoList", api.getObjetoList)
+	private.Put("/getObjeto", api.getObjeto)
 }
 
 /*
@@ -231,7 +233,7 @@ func (api *Api) cargarDetalle(ctx *fiber.Ctx) error {
 	return ctx.JSON(objectRef)
 }
 
-func (api *Api) get(ctx *fiber.Ctx) error {
+func (api *Api) GetEntidad(ctx *fiber.Ctx) error {
 
 	//Recupero el tipo elemento
 	typeObject := reflect.TypeOf(api.EntidadRef).Elem()
@@ -256,7 +258,7 @@ func (api *Api) get(ctx *fiber.Ctx) error {
 	return ctx.JSON(objectRef)
 }
 
-func (api *Api) getLista(ctx *fiber.Ctx) error {
+func (api *Api) getEntidadList(ctx *fiber.Ctx) error {
 
 	//Creo objeto principal para llenar listado
 	elemType := reflect.TypeOf(api.EntidadListaRef).Elem()
@@ -271,12 +273,56 @@ func (api *Api) getLista(ctx *fiber.Ctx) error {
 	}
 
 	//Ejecuto el servicio
-	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "GetLista", objectRef, query)
+	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "GetEntidadList", objectRef, query)
 	if e != nil {
 		return e
 	}
 
 	return ctx.JSON(objectRef)
+}
+
+func (api *Api) getObjetoList(ctx *fiber.Ctx) error {
+
+	//Creo objeto principal para llenar listado
+	listaRef := make([]interface{}, 0)
+
+	//Cast del objeto
+	query := coredto.Query{}
+	e := json.Unmarshal(ctx.Body(), &query)
+	if e != nil {
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO)
+		return coreerror.NewError(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO, "")
+	}
+
+	//Ejecuto el servicio
+	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "GetObjetoList", &listaRef, query)
+	if e != nil {
+		return e
+	}
+
+	return ctx.JSON(listaRef)
+}
+
+func (api *Api) getObjeto(ctx *fiber.Ctx) error {
+
+	//Creo objeto principal para llenar listado
+	listaRef := make([]interface{}, 0)
+
+	//Cast del objeto
+	query := coredto.Query{}
+	e := json.Unmarshal(ctx.Body(), &query)
+	if e != nil {
+		log.Error().Err(e).Msg(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO)
+		return coreerror.NewError(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO, "")
+	}
+
+	//Ejecuto el servicio
+	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "GetObjeto", &listaRef, query)
+	if e != nil {
+		return e
+	}
+
+	return ctx.JSON(listaRef)
 }
 
 func (api *Api) getObjectRef(ctx *fiber.Ctx) (interface{}, error) {
