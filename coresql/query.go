@@ -110,7 +110,7 @@ func GetObjetoList(trn *gorm.DB, entidadRef interface{}, query coredto.Query, li
 
 	//Formo el listado de valores a mapear con el resultado de la consulta
 	valores := make([]interface{}, 0)
-	GetValores(entidadRef, query, &valores)
+	GetValores(entidadRef, query.Campos, &valores)
 
 	//Agrego el objeto a la lista
 	listaValor := reflect.ValueOf(listaRef).Elem()
@@ -164,7 +164,7 @@ func GetObjeto(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaR
 
 	//Formo el listado de valores a mapear con el resultado de la consulta
 	valores := make([]interface{}, 0)
-	GetValores(entidadRef, query, &valores)
+	GetValores(entidadRef, query.Campos, &valores)
 
 	//Agrego el objeto a la lista
 	listaValor := reflect.ValueOf(listaRef).Elem()
@@ -446,7 +446,7 @@ func GetSelectSql(entityRef interface{}, query coredto.Query, joins *orderedmap.
 		//Formo mi Select
 		propiedad := strcase.ToSnake(propiedades[len(propiedades)-1])
 		sqlSelect.WriteString("\n")
-		if tipoDato == "int" || tipoDato == "int8" || tipoDato == "int16" || tipoDato == "int32" || tipoDato == "int64" || tipoDato == "uint" || tipoDato == "uint8" || tipoDato == "uint16" || tipoDato == "uint32" || tipoDato == "uint64" || tipoDato == "byte" || tipoDato == "rune" || tipoDato == "float32" || tipoDato == "float64" {
+		if strings.Contains(tipoDato, "int") || strings.Contains(tipoDato, "uint") || strings.Contains(tipoDato, "byte") || strings.Contains(tipoDato, "rune") || strings.Contains(tipoDato, "float") {
 			sqlSelect.WriteString("COALESCE(")
 			sqlSelect.WriteString(join.Alias)
 			sqlSelect.WriteString(".")
@@ -682,12 +682,12 @@ func GetLimite(dialector string, query coredto.Query) string {
 	return sqlLimite.String()
 }
 
-func GetTipoDatos(entityRef interface{}, query coredto.Query) []string {
+func GetTipoDatos(entityRef interface{}, campos []string) []string {
 
 	//Formo arreglo para generar todos los joins en base a Campos, Filtros, Ordenamientos
 	tipoDatos := make([]string, 0)
 
-	for _, campo := range query.Campos {
+	for _, campo := range campos {
 
 		//Asigno la referencia principal
 		ref := entityRef
@@ -721,9 +721,9 @@ func GetTipoDatos(entityRef interface{}, query coredto.Query) []string {
 	return tipoDatos
 }
 
-func GetValores(entidadRef interface{}, query coredto.Query, valores interface{}) {
+func GetValores(entidadRef interface{}, campos []string, valores interface{}) {
 
-	tipoDatos := GetTipoDatos(entidadRef, query)
+	tipoDatos := GetTipoDatos(entidadRef, campos)
 
 	//Agrego el objeto a la lista
 	listaValor := reflect.ValueOf(valores).Elem()
@@ -798,6 +798,74 @@ func GetValores(entidadRef interface{}, query coredto.Query, valores interface{}
 			var v bool
 			objectValor := reflect.ValueOf(&v)
 			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "*int":
+			var v *int
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "*int8":
+			var v *int8
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "*int16":
+			var v *int16
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "*int32":
+			var v *int32
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "*int64":
+			var v *int64
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "*uint":
+			var v *uint
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "*uint8":
+			var v *uint8
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "*uint16":
+			var v *uint16
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "*uint32":
+			var v *uint32
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "*float32":
+			var v *float32
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "*float64":
+			var v *float64
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "*complex64":
+			var v *complex64
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "*complex128":
+			var v *complex128
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "*byte":
+			var v *byte
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "*rune":
+			var v *rune
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "*string":
+			var v *string
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "*bool":
+			var v *bool
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
 		default:
 			var v string
 			objectValor := reflect.ValueOf(&v)
@@ -826,7 +894,7 @@ func Map(entidadRef interface{}, query coredto.Query, rows *sql.Rows) error {
 
 	//Formo el listado de valores a mapear con el resultado de la consulta
 	valores := make([]interface{}, 0)
-	GetValores(entidadRef, query, &valores)
+	GetValores(entidadRef, query.Campos, &valores)
 
 	//Campos a mapear
 	campos := query.Campos
@@ -899,7 +967,7 @@ func MapLista(entidadRef interface{}, listaRef interface{}, query coredto.Query,
 
 	//Formo el listado de valores a mapear con el resultado de la consulta
 	valores := make([]interface{}, 0)
-	GetValores(entidadRef, query, &valores)
+	GetValores(entidadRef, query.Campos, &valores)
 
 	//Campos a mapear
 	campos := query.Campos
