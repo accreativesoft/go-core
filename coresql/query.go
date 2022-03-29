@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/accreativesoft/go-core/corecons"
 	"github.com/accreativesoft/go-core/coredto"
@@ -517,6 +518,10 @@ func GetSelectSql(entityRef interface{}, query coredto.Query, joins *orderedmap.
 			sqlSelect.WriteString(".")
 			sqlSelect.WriteString(propiedad)
 			sqlSelect.WriteString(",false)")
+		} else if tipoDato == "*time.Time" {
+			sqlSelect.WriteString(join.Alias)
+			sqlSelect.WriteString(".")
+			sqlSelect.WriteString(propiedad)
 		} else {
 			sqlSelect.WriteString("COALESCE(")
 			sqlSelect.WriteString(join.Alias)
@@ -873,6 +878,10 @@ func GetValores(entidadRef interface{}, campos []string, valores interface{}) er
 			var v bool
 			objectValor := reflect.ValueOf(&v)
 			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "time.Time":
+			var v time.Time
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
 		case "*int":
 			var v *int
 			objectValor := reflect.ValueOf(&v)
@@ -939,6 +948,10 @@ func GetValores(entidadRef interface{}, campos []string, valores interface{}) er
 			listaValor.Set(reflect.Append(listaValor, objectValor))
 		case "*bool":
 			var v *bool
+			objectValor := reflect.ValueOf(&v)
+			listaValor.Set(reflect.Append(listaValor, objectValor))
+		case "*time.Time":
+			var v *time.Time
 			objectValor := reflect.ValueOf(&v)
 			listaValor.Set(reflect.Append(listaValor, objectValor))
 		default:
