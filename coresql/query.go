@@ -19,9 +19,10 @@ import (
 )
 
 type Join struct {
-	Alias  string
-	Sql    string
-	Campos []string
+	Alias      string
+	Sql        string
+	Campos     []string
+	Referencia interface{}
 }
 
 func GetEntidad(trn *gorm.DB, entidadRef interface{}, query coredto.Query) error {
@@ -34,7 +35,10 @@ func GetEntidad(trn *gorm.DB, entidadRef interface{}, query coredto.Query) error
 	query.ResultadoMaximo = 1
 
 	//Recupero la sentencia select
-	sql := GetSql(dialector, entidadRef, query)
+	sql, e := GetSql(dialector, entidadRef, query)
+	if e != nil {
+		return e
+	}
 
 	//Set de los parametros del sql
 	values := make([]interface{}, 0)
@@ -45,8 +49,8 @@ func GetEntidad(trn *gorm.DB, entidadRef interface{}, query coredto.Query) error
 	//Obtengo las filas
 	rows, e := trn.Raw(sql, values...).Rows()
 	if e != nil {
-		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+		return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 	}
 
 	e = Map(entidadRef, query, rows)
@@ -63,7 +67,10 @@ func GetEntidadList(trn *gorm.DB, entidadRef interface{}, query coredto.Query, l
 	dialector := trn.Dialector.Name()
 
 	//Recupero la sentencia select
-	sql := GetSql(dialector, entidadRef, query)
+	sql, e := GetSql(dialector, entidadRef, query)
+	if e != nil {
+		return e
+	}
 
 	//Set de los parametros del sql
 	values := make([]interface{}, 0)
@@ -74,8 +81,8 @@ func GetEntidadList(trn *gorm.DB, entidadRef interface{}, query coredto.Query, l
 	//Obtengo las filas
 	rows, e := trn.Raw(sql, values...).Rows()
 	if e != nil {
-		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+		return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 	}
 
 	e = MapLista(entidadRef, listaRef, query, rows)
@@ -93,7 +100,10 @@ func GetObjetoList(trn *gorm.DB, entidadRef interface{}, query coredto.Query, li
 	dialector := trn.Dialector.Name()
 
 	//Recupero la sentencia select
-	sql := GetSql(dialector, entidadRef, query)
+	sql, e := GetSql(dialector, entidadRef, query)
+	if e != nil {
+		return e
+	}
 
 	//Set de los parametros del sql
 	values := make([]interface{}, 0)
@@ -104,8 +114,8 @@ func GetObjetoList(trn *gorm.DB, entidadRef interface{}, query coredto.Query, li
 	//Obtengo las filas
 	rows, e := trn.Raw(sql, values...).Rows()
 	if e != nil {
-		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+		return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 	}
 
 	//Formo el listado de valores a mapear con el resultado de la consulta
@@ -123,8 +133,8 @@ func GetObjetoList(trn *gorm.DB, entidadRef interface{}, query coredto.Query, li
 		//Map de fila con los valores enviados
 		e := rows.Scan(valores...)
 		if e != nil {
-			log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-			return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+			log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+			return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 		}
 
 		objectRef = append(objectRef, valores...)
@@ -147,7 +157,10 @@ func GetObjeto(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaR
 	query.ResultadoMaximo = 1
 
 	//Recupero la sentencia select
-	sql := GetSql(dialector, entidadRef, query)
+	sql, e := GetSql(dialector, entidadRef, query)
+	if e != nil {
+		return e
+	}
 
 	//Set de los parametros del sql
 	values := make([]interface{}, 0)
@@ -158,8 +171,8 @@ func GetObjeto(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaR
 	//Obtengo las filas
 	rows, e := trn.Raw(sql, values...).Rows()
 	if e != nil {
-		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+		return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 	}
 
 	//Formo el listado de valores a mapear con el resultado de la consulta
@@ -174,8 +187,8 @@ func GetObjeto(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaR
 		//Map de fila con los valores enviados
 		e := rows.Scan(valores...)
 		if e != nil {
-			log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-			return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+			log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+			return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 		}
 
 		//Recorro los valores
@@ -193,7 +206,10 @@ func GetObjeto(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaR
 func NumeroRegistros(trn *gorm.DB, entidadRef interface{}, filtros []coredto.Filtro) (int, error) {
 
 	//Recupero la sentencia select
-	sql := GetSqlCount(entidadRef, filtros)
+	sql, e := GetSqlCount(entidadRef, filtros)
+	if e != nil {
+		return 0, e
+	}
 
 	//Set de los parametros del sql
 	values := make([]interface{}, 0)
@@ -204,8 +220,8 @@ func NumeroRegistros(trn *gorm.DB, entidadRef interface{}, filtros []coredto.Fil
 	//Obtengo las filas
 	rows, e := trn.Raw(sql, values...).Rows()
 	if e != nil {
-		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-		return 0, coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+		return 0, coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 	}
 
 	//Valor
@@ -215,24 +231,31 @@ func NumeroRegistros(trn *gorm.DB, entidadRef interface{}, filtros []coredto.Fil
 		//Map de fila con los valores enviados
 		e := rows.Scan(&valor)
 		if e != nil {
-			log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-			return 0, coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+			log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+			return 0, coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 		}
 	}
 
 	return valor, nil
 }
 
-func GetSql(dialector string, entityRef interface{}, query coredto.Query) string {
+func GetSql(dialector string, entityRef interface{}, query coredto.Query) (string, error) {
 
 	//Variable sql unir las sentencias select, joins, where , order
 	var sql strings.Builder
 
 	//Recupero los joins de la consulta
-	joins := GetJoins(entityRef, query)
+	joins, e := GetJoins(entityRef, query)
+	if e != nil {
+		return "", e
+	}
 
 	//Formo los selects
-	sql.WriteString(GetSelectSql(entityRef, query, joins))
+	selectSql, e := GetSelectSql(entityRef, query, joins)
+	if e != nil {
+		return "", e
+	}
+	sql.WriteString(selectSql)
 
 	//Formo los joins
 	for el := joins.Front(); el != nil; el = el.Next() {
@@ -251,10 +274,10 @@ func GetSql(dialector string, entityRef interface{}, query coredto.Query) string
 
 	//fmt.Println("sql-->", sql.String())
 
-	return sql.String()
+	return sql.String(), nil
 }
 
-func GetSqlCount(entityRef interface{}, filtros []coredto.Filtro) string {
+func GetSqlCount(entityRef interface{}, filtros []coredto.Filtro) (string, error) {
 
 	//Variable sql unir las sentencias select, joins, where , order
 	var sql strings.Builder
@@ -264,7 +287,10 @@ func GetSqlCount(entityRef interface{}, filtros []coredto.Filtro) string {
 	query.Filtros = filtros
 
 	//Recupero los joins de la consulta
-	joins := GetJoins(entityRef, query)
+	joins, e := GetJoins(entityRef, query)
+	if e != nil {
+		return "", e
+	}
 
 	//Formo los selects
 	sql.WriteString("SELECT COUNT(1)")
@@ -281,10 +307,10 @@ func GetSqlCount(entityRef interface{}, filtros []coredto.Filtro) string {
 
 	//fmt.Println("sql-->", sql.String())
 
-	return sql.String()
+	return sql.String(), nil
 }
 
-func GetJoins(entityRef interface{}, query coredto.Query) *orderedmap.OrderedMap {
+func GetJoins(entityRef interface{}, query coredto.Query) (*orderedmap.OrderedMap, error) {
 
 	//Formo arreglo para generar todos los joins en base a Campos, Filtros, Ordenamientos
 	campos := make([]string, 0)
@@ -305,7 +331,7 @@ func GetJoins(entityRef interface{}, query coredto.Query) *orderedmap.OrderedMap
 	//Definicion de varaibles
 	secuencia := 2
 	joins := orderedmap.NewOrderedMap()
-	relaciones := make(map[string]bool)
+	//relaciones := make(map[string]bool)
 	//joins := make(map[string]*Join)
 
 	//Recupero el nombre de la referencia
@@ -338,55 +364,73 @@ func GetJoins(entityRef interface{}, query coredto.Query) *orderedmap.OrderedMap
 			index := strings.Index(campo, penultProp)
 			relacion := campo[0 : index-1]
 
-			if _, ok := relaciones[relacion]; !ok {
+			//if _, ok := relaciones[relacion]; !ok {
 
-				//Split de las propiedades de la relacion
-				propiedades := strings.Split(relacion, ".")
+			//Split de las propiedades de la relacion
+			propiedades := strings.Split(relacion, ".")
 
-				//Recorro las propiedades de la relacion
-				for _, propiedad := range propiedades {
+			//Recorro las propiedades de la relacion
+			for _, propiedad := range propiedades {
 
-					claveJoins = claveJoins + "." + propiedad
+				//Recupero el padre
+				claveJoins = claveJoins + "." + propiedad
+				if j, ok := joins.Get(claveJoins); ok {
+					join := j.(*Join)
+					ref = join.Referencia
+					alias = join.Alias
+				}
 
-					if _, ok := joins.Get(claveJoins); !ok {
+				if _, ok := joins.Get(claveJoins); !ok {
 
-						//Recupero el tag  gorm
-						t, _ := corereflect.GetFieldTag(ref, strcase.ToCamel(propiedad), "gorm")
-						//fmt.Println("l->", t)
-
-						//obtengo el foreignKey
-						f := strcase.ToSnake(strings.Split(t, "foreignKey:")[1])
-						//fmt.Println("f->", f)
-
-						//Asigno el objeto de la propiedad
-						u, _ := corereflect.GetField(ref, strcase.ToCamel(propiedad))
-						ref = u
-
-						//Formo el join
-						join := Join{}
-						join.Alias = "e" + strconv.Itoa(secuencia)
-						join.Sql = "\n" + "LEFT JOIN " + strcase.ToSnake(propiedad) + " " + join.Alias + " ON " + join.Alias + ".id" + " = " + alias + "." + f
-						//joins[claveJoins] = &join
-						joins.Set(claveJoins, &join)
-
-						alias = join.Alias
-						secuencia++
-
+					//Recupero el tag  gorm
+					t, e := corereflect.GetFieldTag(ref, strcase.ToCamel(propiedad), "gorm")
+					if e != nil {
+						log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+						return nil, coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 					}
+					//fmt.Println("l->", t)
+
+					//obtengo el foreignKey
+					f := strcase.ToSnake(strings.Split(t, "foreignKey:")[1])
+					if e != nil {
+						log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+						return nil, coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
+					}
+					//fmt.Println("f->", f)
+
+					//Asigno el objeto de la propiedad
+					u, _ := corereflect.GetField(ref, strcase.ToCamel(propiedad))
+					if e != nil {
+						log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+						return nil, coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
+					}
+					ref = u
+
+					//Formo el join
+					join := Join{}
+					join.Alias = "e" + strconv.Itoa(secuencia)
+					join.Sql = "\n" + "LEFT JOIN " + strcase.ToSnake(propiedad) + " " + join.Alias + " ON " + join.Alias + ".id" + " = " + alias + "." + f
+					join.Referencia = ref
+					joins.Set(claveJoins, &join)
+
+					alias = join.Alias
+					secuencia++
 
 				}
 
-				relaciones[relacion] = true
-
 			}
+
+			//relaciones[relacion] = true
+
+			//}
 
 		}
 	}
 
-	return joins
+	return joins, nil
 }
 
-func GetSelectSql(entityRef interface{}, query coredto.Query, joins *orderedmap.OrderedMap) string {
+func GetSelectSql(entityRef interface{}, query coredto.Query, joins *orderedmap.OrderedMap) (string, error) {
 
 	var sqlSelect strings.Builder
 	sqlSelect.WriteString("SELECT")
@@ -402,6 +446,9 @@ func GetSelectSql(entityRef interface{}, query coredto.Query, joins *orderedmap.
 		//tipoDato
 		tipoDato := ""
 
+		//error
+		var e error
+
 		//Split del campo
 		var join *Join
 		propiedades := strings.Split(campo, ".")
@@ -414,7 +461,11 @@ func GetSelectSql(entityRef interface{}, query coredto.Query, joins *orderedmap.
 
 			//Recupero
 			propiedad := strcase.ToCamel(propiedades[0])
-			tipoDato, _ = corereflect.GetFieldType(ref, propiedad)
+			tipoDato, e = corereflect.GetFieldType(ref, propiedad)
+			if e != nil {
+				log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+				return "", coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
+			}
 
 		} else {
 
@@ -424,10 +475,18 @@ func GetSelectSql(entityRef interface{}, query coredto.Query, joins *orderedmap.
 				propiedad = strcase.ToCamel(propiedad)
 
 				if i == len(propiedades)-1 {
-					tipoDato, _ = corereflect.GetFieldType(ref, propiedad)
+					tipoDato, e = corereflect.GetFieldType(ref, propiedad)
+					if e != nil {
+						log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+						return "", coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
+					}
 				} else {
 					//Asigno el objeto de la propiedad
-					ref, _ = corereflect.GetField(ref, propiedad)
+					ref, e = corereflect.GetField(ref, propiedad)
+					if e != nil {
+						log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+						return "", coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
+					}
 				}
 			}
 
@@ -468,7 +527,7 @@ func GetSelectSql(entityRef interface{}, query coredto.Query, joins *orderedmap.
 		sqlSelect.WriteString(", ")
 	}
 
-	return sqlSelect.String()[0 : len(sqlSelect.String())-2]
+	return sqlSelect.String()[0 : len(sqlSelect.String())-2], nil
 
 }
 
@@ -682,10 +741,11 @@ func GetLimite(dialector string, query coredto.Query) string {
 	return sqlLimite.String()
 }
 
-func GetTipoDatos(entityRef interface{}, campos []string) []string {
+func GetTipoDatos(entityRef interface{}, campos []string) ([]string, error) {
 
 	//Formo arreglo para generar todos los joins en base a Campos, Filtros, Ordenamientos
 	tipoDatos := make([]string, 0)
+	var e error
 
 	for _, campo := range campos {
 
@@ -697,7 +757,11 @@ func GetTipoDatos(entityRef interface{}, campos []string) []string {
 
 		if len(propiedades) == 1 {
 			propiedad := strcase.ToCamel(propiedades[0])
-			t, _ := corereflect.GetFieldType(ref, propiedad)
+			t, e := corereflect.GetFieldType(ref, propiedad)
+			if e != nil {
+				log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+				return nil, coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
+			}
 			tipoDatos = append(tipoDatos, t)
 
 		} else if len(propiedades) > 1 {
@@ -708,22 +772,33 @@ func GetTipoDatos(entityRef interface{}, campos []string) []string {
 				propiedad = strcase.ToCamel(propiedad)
 
 				if i == len(propiedades)-1 {
-					t, _ := corereflect.GetFieldType(ref, propiedad)
+					t, e := corereflect.GetFieldType(ref, propiedad)
+					if e != nil {
+						log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+						return nil, coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
+					}
 					tipoDatos = append(tipoDatos, t)
 				} else {
 					//Asigno el objeto de la propiedad
-					ref, _ = corereflect.GetField(ref, propiedad)
+					ref, e = corereflect.GetField(ref, propiedad)
+					if e != nil {
+						log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+						return nil, coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
+					}
 				}
 			}
 		}
 	}
 
-	return tipoDatos
+	return tipoDatos, nil
 }
 
-func GetValores(entidadRef interface{}, campos []string, valores interface{}) {
+func GetValores(entidadRef interface{}, campos []string, valores interface{}) error {
 
-	tipoDatos := GetTipoDatos(entidadRef, campos)
+	tipoDatos, e := GetTipoDatos(entidadRef, campos)
+	if e != nil {
+		return e
+	}
 
 	//Agrego el objeto a la lista
 	listaValor := reflect.ValueOf(valores).Elem()
@@ -873,6 +948,8 @@ func GetValores(entidadRef interface{}, campos []string, valores interface{}) {
 		}
 
 	}
+
+	return nil
 }
 
 func Sign(dialector string, secuencia *int) string {
@@ -894,7 +971,10 @@ func Map(entidadRef interface{}, query coredto.Query, rows *sql.Rows) error {
 
 	//Formo el listado de valores a mapear con el resultado de la consulta
 	valores := make([]interface{}, 0)
-	GetValores(entidadRef, query.Campos, &valores)
+	e := GetValores(entidadRef, query.Campos, &valores)
+	if e != nil {
+		return e
+	}
 
 	//Campos a mapear
 	campos := query.Campos
@@ -911,8 +991,8 @@ func Map(entidadRef interface{}, query coredto.Query, rows *sql.Rows) error {
 		//Map de fila con los valores enviados
 		e := rows.Scan(valores...)
 		if e != nil {
-			log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-			return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+			log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+			return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 		}
 
 		//Recorro los valores
@@ -980,8 +1060,8 @@ func MapLista(entidadRef interface{}, listaRef interface{}, query coredto.Query,
 		//Map de fila con los valores enviados
 		e := rows.Scan(valores...)
 		if e != nil {
-			log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-			return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+			log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+			return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 		}
 
 		//Creo objeto principal para llenar listado

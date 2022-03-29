@@ -35,8 +35,8 @@ func Eliminar(trn *gorm.DB, entityRef interface{}) error {
 	//Ejecuto la consulta
 	e := trn.Exec(sql, values...).Error
 	if e != nil {
-		log.Error().Msg(coremsg.MSG_ERROR_BACKEND)
-		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		log.Error().Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+		return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 	}
 	return nil
 }
@@ -47,7 +47,10 @@ func EliminarLista(trn *gorm.DB, entidadRef interface{}, delete coredto.Delete) 
 	dialector := trn.Dialector.Name()
 
 	//Recupero la sentencia select
-	sql := GetDeleteFromSql(dialector, entidadRef, delete)
+	sql, e := GetDeleteFromSql(dialector, entidadRef, delete)
+	if e != nil {
+		return e
+	}
 
 	//Set de los parametros del sql
 	values := make([]interface{}, 0)
@@ -56,10 +59,10 @@ func EliminarLista(trn *gorm.DB, entidadRef interface{}, delete coredto.Delete) 
 	}
 
 	//Ejecuto la consulta
-	e := trn.Exec(sql, values...).Error
+	e = trn.Exec(sql, values...).Error
 	if e != nil {
-		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+		return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 	}
 	return nil
 }
@@ -80,16 +83,24 @@ func GetDeleteSql(entityRef interface{}) string {
 
 }
 
-func GetDeleteFromSql(dialector string, entityRef interface{}, delete coredto.Delete) string {
+func GetDeleteFromSql(dialector string, entityRef interface{}, delete coredto.Delete) (string, error) {
 	switch dialector {
 	case "postgres":
-		return GetDeleteFromPostgres(entityRef, delete)
+		sql, e := GetDeleteFromPostgres(entityRef, delete)
+		if e != nil {
+			return "", e
+		}
+		return sql, nil
 	default:
-		return GetDeleteFromMysql(entityRef, delete)
+		sql, e := GetDeleteFromMysql(entityRef, delete)
+		if e != nil {
+			return "", e
+		}
+		return sql, nil
 	}
 }
 
-func GetDeleteFromMysql(entityRef interface{}, delete coredto.Delete) string {
+func GetDeleteFromMysql(entityRef interface{}, delete coredto.Delete) (string, error) {
 
 	//Formo Query
 	query := coredto.Query{}
@@ -97,7 +108,10 @@ func GetDeleteFromMysql(entityRef interface{}, delete coredto.Delete) string {
 	query.Filtros = delete.Filtros
 
 	//Recupero los joins de la consulta
-	joins := GetJoins(entityRef, query)
+	joins, e := GetJoins(entityRef, query)
+	if e != nil {
+		return "", e
+	}
 
 	//Declaracion de variables
 	var sql strings.Builder
@@ -123,11 +137,11 @@ func GetDeleteFromMysql(entityRef interface{}, delete coredto.Delete) string {
 
 	//fmt.Println("sql--->", sql.String())
 
-	return sql.String()
+	return sql.String(), nil
 
 }
 
-func GetDeleteFromPostgres(entityRef interface{}, delete coredto.Delete) string {
+func GetDeleteFromPostgres(entityRef interface{}, delete coredto.Delete) (string, error) {
 
 	//Formo Query
 	query := coredto.Query{}
@@ -147,10 +161,14 @@ func GetDeleteFromPostgres(entityRef interface{}, delete coredto.Delete) string 
 	sql.WriteString("\n")
 	sql.WriteString("WHERE id IN ( ")
 	sql.WriteString("\n")
-	sql.WriteString(GetSql("", entityRef, query))
+	s, e := GetSql("", entityRef, query)
+	if e != nil {
+		return "", e
+	}
+	sql.WriteString(s)
 	sql.WriteString(")")
 
-	return sql.String()
+	return sql.String(), nil
 
 }
 

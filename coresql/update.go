@@ -35,8 +35,8 @@ func Actualizar(trn *gorm.DB, entityRef interface{}) error {
 	//Ejecuto la consulta
 	e := trn.Exec(sql, values...).Error
 	if e != nil {
-		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+		return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 	}
 	return nil
 }
@@ -47,7 +47,10 @@ func ActualizarLista(trn *gorm.DB, entidadRef interface{}, update coredto.Update
 	dialector := trn.Dialector.Name()
 
 	//Recupero la sentencia select
-	sql := GetUpdateFrom(dialector, entidadRef, update)
+	sql, e := GetUpdateFrom(dialector, entidadRef, update)
+	if e != nil {
+		return e
+	}
 
 	//Set de los parametros del sql
 	values := make([]interface{}, 0)
@@ -59,10 +62,10 @@ func ActualizarLista(trn *gorm.DB, entidadRef interface{}, update coredto.Update
 	}
 
 	//Ejecuto la consulta
-	e := trn.Exec(sql, values...).Error
+	e = trn.Exec(sql, values...).Error
 	if e != nil {
-		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+		return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 	}
 	return nil
 }
@@ -138,16 +141,24 @@ func GetUpdateSql(entityRef interface{}) string {
 
 }
 
-func GetUpdateFrom(dialector string, entityRef interface{}, update coredto.Update) string {
+func GetUpdateFrom(dialector string, entityRef interface{}, update coredto.Update) (string, error) {
 	switch dialector {
 	case "postgres":
-		return GetUpdateFromPostgres(entityRef, update)
+		sql, e := GetUpdateFromPostgres(entityRef, update)
+		if e != nil {
+			return "", e
+		}
+		return sql, nil
 	default:
-		return GetUpdateFromMysql(entityRef, update)
+		sql, e := GetUpdateFromMysql(entityRef, update)
+		if e != nil {
+			return "", e
+		}
+		return sql, nil
 	}
 }
 
-func GetUpdateFromMysql(entityRef interface{}, update coredto.Update) string {
+func GetUpdateFromMysql(entityRef interface{}, update coredto.Update) (string, error) {
 
 	//Formo Query
 	query := coredto.Query{}
@@ -155,7 +166,10 @@ func GetUpdateFromMysql(entityRef interface{}, update coredto.Update) string {
 	query.Filtros = update.Filtros
 
 	//Recupero los joins de la consulta
-	joins := GetJoins(entityRef, query)
+	joins, e := GetJoins(entityRef, query)
+	if e != nil {
+		return "", e
+	}
 
 	//Declaracion de variables
 	var sql strings.Builder
@@ -209,11 +223,11 @@ func GetUpdateFromMysql(entityRef interface{}, update coredto.Update) string {
 
 	//fmt.Println("sql--->", sql.String())
 
-	return sql.String()
+	return sql.String(), e
 
 }
 
-func GetUpdateFromPostgres(entityRef interface{}, update coredto.Update) string {
+func GetUpdateFromPostgres(entityRef interface{}, update coredto.Update) (string, error) {
 
 	//Formo Query
 	query := coredto.Query{}
@@ -221,7 +235,10 @@ func GetUpdateFromPostgres(entityRef interface{}, update coredto.Update) string 
 	query.Filtros = update.Filtros
 
 	//Recupero los joins de la consulta
-	joins := GetJoins(entityRef, query)
+	joins, e := GetJoins(entityRef, query)
+	if e != nil {
+		return "", e
+	}
 
 	//Declaracion de variables
 	var sql strings.Builder
@@ -287,7 +304,7 @@ func GetUpdateFromPostgres(entityRef interface{}, update coredto.Update) string 
 
 	//fmt.Println("sql--->", sql.String())
 
-	return sql.String()
+	return sql.String(), nil
 
 }
 

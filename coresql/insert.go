@@ -39,34 +39,34 @@ func Insertar(trn *gorm.DB, entidadRef interface{}) error {
 		//Ejecuto y tomo el ultimo id insertado
 		rows, e := trn.Raw(sql, values...).Rows()
 		if e != nil {
-			log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-			return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+			log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+			return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 		}
 		for rows.Next() {
 			e := rows.Scan(&id)
 			if e != nil {
-				log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-				return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+				log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+				return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 			}
 		}
 	default:
 		//Ejecuto el insert
 		e := trn.Exec(sql, values...).Error
 		if e != nil {
-			log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-			return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+			log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+			return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 		}
 		//Recupero el utimo insertado
 		rows, er := trn.Raw("select LAST_INSERT_ID()").Rows()
 		if er != nil {
-			log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-			return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+			log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+			return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 		}
 		for rows.Next() {
 			e := rows.Scan(&id)
 			if e != nil {
-				log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-				return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+				log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+				return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 			}
 		}
 	}

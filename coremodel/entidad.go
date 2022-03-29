@@ -21,14 +21,14 @@ type Entidad struct {
 	UsuarioCreacion     string     `gorm:"type:varchar(50)" json:"usuarioCreacion,omitempty"`
 	UsuarioModificacion string     `gorm:"type:varchar(50)" json:"usuarioModificacion,omitempty"`
 	IdEntidadOrigen     *int       `json:"idEntidadOrigen,omitempty"`
-	Eliminado           bool       `gorm:"-" json:"eliminado,omitempty"`
+	Eliminado           bool       `gorm:"-:all" json:"eliminado,omitempty"`
 }
 
 func (entidad *Entidad) Insertar(trn *gorm.DB, entidadRef interface{}) error {
 	e := trn.Create(entidadRef).Error
 	if e != nil {
-		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+		return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 	}
 	return nil
 }
@@ -36,8 +36,8 @@ func (entidad *Entidad) Insertar(trn *gorm.DB, entidadRef interface{}) error {
 func (entidad *Entidad) Actualizar(trn *gorm.DB, entidadRef interface{}) error {
 	e := trn.Save(entidadRef).Error
 	if e != nil {
-		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+		return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 	}
 	return nil
 }
@@ -45,8 +45,8 @@ func (entidad *Entidad) Actualizar(trn *gorm.DB, entidadRef interface{}) error {
 func (entidad *Entidad) Eliminar(trn *gorm.DB, entidadRef interface{}) error {
 	e := trn.Omit(clause.Associations).Delete(entidadRef).Error
 	if e != nil {
-		log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-		return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+		log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+		return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 	}
 	return nil
 }
@@ -64,8 +64,8 @@ func (entidad *Entidad) Guardar(trn *gorm.DB, entidadRef interface{}) error {
 			ref, _ := corereflect.GetField(entidadRef, "Id")
 			e := trn.Delete(entidadRef, ref).Error
 			if e != nil {
-				log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-				return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+				log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+				return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 			}
 		}
 	} else {
@@ -74,16 +74,16 @@ func (entidad *Entidad) Guardar(trn *gorm.DB, entidadRef interface{}) error {
 			//entidad.Insertar(trn, entidadRef)
 			e := trn.Create(entidadRef).Error
 			if e != nil {
-				log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-				return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+				log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+				return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 			}
 		} else {
 			//Si el id es diferente a cero actualiza el registro
 			//entidad.Actualizar(trn, entidadRef)
 			e := trn.Save(entidadRef).Error
 			if e != nil {
-				log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
-				return coreerror.NewError(coremsg.MSG_ERROR_BACKEND, "")
+				log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+				return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 			}
 		}
 	}
@@ -106,7 +106,6 @@ func (entidad *Entidad) BuscarPorId(trn *gorm.DB, entidadRef interface{}) error 
 	id, _ := corereflect.GetField(entidadRef, "Id")
 	e := trn.First(entidadRef, id).Error
 	if e != nil {
-		//log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
 		v := reflect.ValueOf(entidadRef).Elem()
 		v.Set(reflect.Zero(v.Type()))
 		return nil
@@ -118,7 +117,6 @@ func (entidad *Entidad) CargarDetalle(trn *gorm.DB, entidadRef interface{}) erro
 	id, _ := corereflect.GetField(entidadRef, "Id")
 	e := trn.First(entidadRef, id).Error
 	if e != nil {
-		//log.Error().Err(e).Msg(coremsg.MSG_ERROR_BACKEND)
 		v := reflect.ValueOf(entidadRef).Elem()
 		v.Set(reflect.Zero(v.Type()))
 		return nil
