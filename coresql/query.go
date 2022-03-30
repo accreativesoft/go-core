@@ -95,7 +95,7 @@ func GetEntidadList(trn *gorm.DB, entidadRef interface{}, query coredto.Query, l
 
 }
 
-func GetObjetoList(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRef interface{}) error {
+func GetObjetoList(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRef *[]interface{}) error {
 
 	//Recupero el nombre del dialector
 	dialector := trn.Dialector.Name()
@@ -124,12 +124,13 @@ func GetObjetoList(trn *gorm.DB, entidadRef interface{}, query coredto.Query, li
 	GetValores(entidadRef, query.Campos, &valores)
 
 	//Agrego el objeto a la lista
-	listaValor := reflect.ValueOf(listaRef).Elem()
+	//listaValor := reflect.ValueOf(listaRef).Elem()
 
 	for rows.Next() {
 
 		//Creo lista de objetos
 		objectRef := make([]interface{}, 0)
+		listaValor := reflect.ValueOf(&objectRef).Elem()
 
 		//Map de fila con los valores enviados
 		e := rows.Scan(valores...)
@@ -138,9 +139,13 @@ func GetObjetoList(trn *gorm.DB, entidadRef interface{}, query coredto.Query, li
 			return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 		}
 
-		objectRef = append(objectRef, valores...)
-		objectValor := reflect.ValueOf(&objectRef).Elem()
-		listaValor.Set(reflect.Append(listaValor, objectValor))
+		// data is passed by value
+		for _, v := range valores {
+			valor := reflect.ValueOf(v).Elem()
+			listaValor.Set(reflect.Append(listaValor, valor))
+		}
+
+		*listaRef = append(*listaRef, &objectRef)
 
 	}
 
@@ -148,7 +153,7 @@ func GetObjetoList(trn *gorm.DB, entidadRef interface{}, query coredto.Query, li
 
 }
 
-func GetObjeto(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRef interface{}) error {
+func GetObjeto(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRef *[]interface{}) error {
 
 	//Recupero el nombre del dialector
 	dialector := trn.Dialector.Name()
@@ -194,7 +199,7 @@ func GetObjeto(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaR
 
 		//Recorro los valores
 		for _, v := range valores {
-			objectValor := reflect.ValueOf(&v).Elem()
+			objectValor := reflect.ValueOf(v).Elem()
 			listaValor.Set(reflect.Append(listaValor, objectValor))
 		}
 
@@ -548,7 +553,7 @@ func GetWhereSql(entityRef interface{}, query coredto.Query, joins *orderedmap.O
 		sqlWhere.WriteString("    ")
 	}
 
-	grupos := make(map[string]string)
+	grupos := orderedmap.NewOrderedMap()
 
 	rType := fmt.Sprint(reflect.TypeOf(entityRef))
 	model := strcase.ToLowerCamel(strings.Split(rType, ".")[1])
@@ -605,23 +610,35 @@ func GetWhereSql(entityRef interface{}, query coredto.Query, joins *orderedmap.O
 			grupo := strings.Split(filtro.GrupoAndOr, "~")
 			claveGrupo := grupo[1]
 			condicionGrupo := grupo[0]
-			if _, ok := grupos[claveGrupo]; !ok {
+			if g, ok := grupos.Get(claveGrupo); !ok {
 				//Verifico si anteriormente existe un salto de linea
 				salto := "\n"
 				if strings.HasSuffix(sqlWhere.String(), "\n") {
 					salto = ""
 				}
-				grupos[claveGrupo] = salto + "AND (" + cmp + opr + sign
+				grupos.Set(claveGrupo, salto+"AND ("+cmp+opr+sign)
 			} else {
-				grupos[claveGrupo] = grupos[claveGrupo] + " " + condicionGrupo + " " + cmp + opr + sign
+				gr := g.(string)
+				grupos.Set(claveGrupo, gr+" "+condicionGrupo+" "+cmp+opr+sign)
 			}
 		}
 	}
 
 	//Cierro parentensis de grupos
-	for _, grupo := range grupos {
-		grupo = grupo + ")"
-		sqlWhere.WriteString(grupo)
+	i := 0
+	for el := grupos.Front(); el != nil; el = el.Next() {
+		g := el.Value
+		gr := g.(string)
+		//Comparacion si no viene ninguna condicion y solo viene grupos
+		if i == 0 && strings.Compare(sqlWhere.String(), "\nWHERE ") == 0 {
+			sqlWhere.Reset()
+			grupo := strings.Replace(gr, "AND ", "WHERE ", 1) + ")"
+			sqlWhere.WriteString(grupo)
+		} else {
+			grupo := gr + ")"
+			sqlWhere.WriteString(grupo)
+		}
+		i++
 	}
 
 	return sqlWhere.String()[0:len(sqlWhere.String())]

@@ -132,10 +132,10 @@ func (entidad *Entidad) GetEntidadList(trn *gorm.DB, entidadRef interface{}, que
 	return coresql.GetEntidadList(trn, entidadRef, query, listaRef)
 }
 
-func (entidad *Entidad) GetObjetoList(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRef interface{}) error {
+func (entidad *Entidad) GetObjetoList(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRef *[]interface{}) error {
 	return coresql.GetObjetoList(trn, entidadRef, query, listaRef)
 }
 
-func (entidad *Entidad) GetObjeto(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRef interface{}) error {
+func (entidad *Entidad) GetObjeto(trn *gorm.DB, entidadRef interface{}, query coredto.Query, listaRef *[]interface{}) error {
 	return coresql.GetObjeto(trn, entidadRef, query, listaRef)
 }
