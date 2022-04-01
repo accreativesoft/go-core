@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 //Ejecuta metodo por refleccion
@@ -38,6 +39,51 @@ func InvokeFuncReturnValueAndError(objRef interface{}, nfunc string, args ...int
 		return ret, nil
 	}
 	return nil, nil
+}
+
+func GetColumns(objRef interface{}) []string {
+
+	//Inicializo arreglo a devolver
+	columns := make([]string, 0)
+
+	//Obtengo el valor de la inteface
+	va := reflect.ValueOf(objRef).Elem()
+
+	//Recorro los campos del valor obtenido
+	for i := 0; i < va.NumField(); i++ {
+
+		//Obtengo el tipo, tag, nombre del campo
+		ty := va.Type().Field(i)
+		tg := ty.Tag.Get("gorm")
+		na := va.Type().Field(i).Name
+
+		//Recupero los campos de la entidad embebida
+		if strings.Compare(na, "Entidad") == 0 {
+
+			//Obtengo el valor del campo entidad
+			vae := va.FieldByName(na)
+
+			for i := 0; i < vae.NumField(); i++ {
+				//Obtengo el tipo, tag, nombre del campo
+				nae := vae.Type().Field(i).Name
+				tye := vae.Type().Field(i)
+				tge := tye.Tag.Get("gorm")
+
+				//Excluyo columnas que no se mapean con la base
+				if !strings.Contains(tge, "-:all") {
+					columns = append(columns, nae)
+				}
+
+			}
+
+		} else if strings.Compare(ty.Type.Kind().String(), "slice") != 0 && strings.Compare(ty.Type.Kind().String(), "struct") != 0 {
+			//Excluyo columnas que no se mapean con la base
+			if !strings.Contains(tg, "-:all") {
+				columns = append(columns, na)
+			}
+		}
+	}
+	return columns
 }
 
 // GetField returns the value of the provided obj field. obj can whether

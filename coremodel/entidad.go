@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/accreativesoft/go-core/corecons"
 	"github.com/accreativesoft/go-core/coredto"
 	"github.com/accreativesoft/go-core/coreerror"
 	"github.com/accreativesoft/go-core/coremsg"
@@ -104,7 +105,11 @@ func (entidad *Entidad) NumeroRegistros(trn *gorm.DB, entidadRef interface{}, fi
 
 func (entidad *Entidad) BuscarPorId(trn *gorm.DB, entidadRef interface{}) error {
 	id, _ := corereflect.GetField(entidadRef, "Id")
-	e := trn.First(entidadRef, id).Error
+	//e := trn.First(entidadRef, id).Error
+	query := coredto.Query{}
+	query.AddCampos(corereflect.GetColumns(entidadRef)...)
+	query.AddFiltro("id", corecons.EQUALS, id)
+	e := coresql.GetEntidad(trn, entidadRef, query)
 	if e != nil {
 		v := reflect.ValueOf(entidadRef).Elem()
 		v.Set(reflect.Zero(v.Type()))
@@ -115,7 +120,11 @@ func (entidad *Entidad) BuscarPorId(trn *gorm.DB, entidadRef interface{}) error 
 
 func (entidad *Entidad) CargarDetalle(trn *gorm.DB, entidadRef interface{}) error {
 	id, _ := corereflect.GetField(entidadRef, "Id")
-	e := trn.First(entidadRef, id).Error
+	//e := trn.First(entidadRef, id).Error
+	query := coredto.Query{}
+	query.AddCampos(corereflect.GetColumns(entidadRef)...)
+	query.AddFiltro("id", corecons.EQUALS, id)
+	e := coresql.GetEntidad(trn, entidadRef, query)
 	if e != nil {
 		v := reflect.ValueOf(entidadRef).Elem()
 		v.Set(reflect.Zero(v.Type()))
