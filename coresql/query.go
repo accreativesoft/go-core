@@ -348,8 +348,10 @@ func GetJoins(entityRef interface{}, query coredto.Query) (*orderedmap.OrderedMa
 	join := Join{}
 	join.Alias = "e1"
 	join.Sql = "\n" + "FROM " + strcase.ToSnake(model) + " e1"
-	//joins[model] = &join
 	joins.Set(model, &join)
+
+	//Indicador si es slibe
+	isSlice := false
 
 	for _, campo := range campos {
 
@@ -391,6 +393,7 @@ func GetJoins(entityRef interface{}, query coredto.Query) (*orderedmap.OrderedMa
 					//Recupero el tag  gorm
 					t, e := corereflect.GetFieldTag(ref, strcase.ToCamel(propiedad), "gorm")
 					if e != nil {
+						log.Error().Err(e).Msg(propiedad)
 						log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
 						return nil, coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 					}
@@ -406,16 +409,35 @@ func GetJoins(entityRef interface{}, query coredto.Query) (*orderedmap.OrderedMa
 
 					//Asigno el objeto de la propiedad
 					u, _ := corereflect.GetField(ref, strcase.ToCamel(propiedad))
+
+					if reflect.TypeOf(u).Kind().String() == "slice" {
+						//Si es una referencia de un arrglo rrecupeta el elemnte para obtener el typr
+						items := reflect.ValueOf(u)
+						datatype := items.Index(0).Type()
+						fmt.Println(datatype)
+						u = reflect.New(datatype).Interface()
+						isSlice = true
+					}
+
 					if e != nil {
 						log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
 						return nil, coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
 					}
 					ref = u
 
+					//Obtengo el tipo de dato de la porpiedad y obtengo l struct para obtener el nombre de la tabla
+					dt := reflect.ValueOf(u).Type().String()
+					table := strcase.ToSnake(strings.Split(dt, ".")[1])
+
 					//Formo el join
 					join := Join{}
 					join.Alias = "e" + strconv.Itoa(secuencia)
-					join.Sql = "\n" + "LEFT JOIN " + strcase.ToSnake(propiedad) + " " + join.Alias + " ON " + join.Alias + ".id" + " = " + alias + "." + f
+					if isSlice {
+						join.Sql = "\n" + "LEFT JOIN " + table + " " + join.Alias + " ON " + join.Alias + "." + f + " = " + alias + ".id"
+						isSlice = false
+					} else {
+						join.Sql = "\n" + "LEFT JOIN " + table + " " + join.Alias + " ON " + join.Alias + ".id" + " = " + alias + "." + f
+					}
 					join.Referencia = ref
 					joins.Set(claveJoins, &join)
 

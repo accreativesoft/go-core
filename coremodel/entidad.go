@@ -22,7 +22,7 @@ type Entidad struct {
 	UsuarioCreacion     string     `gorm:"type:varchar(50)" json:"usuarioCreacion,omitempty"`
 	UsuarioModificacion string     `gorm:"type:varchar(50)" json:"usuarioModificacion,omitempty"`
 	IdEntidadOrigen     *int       `json:"idEntidadOrigen,omitempty"`
-	Eliminado           bool       `gorm:"-:all" json:"eliminado,omitempty"`
+	Eliminado           bool       `gorm:"-:all" json:"eliminado"`
 }
 
 func (entidad *Entidad) Insertar(trn *gorm.DB, entidadRef interface{}) error {

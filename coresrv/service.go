@@ -1,8 +1,13 @@
 package coresrv
 
 import (
+	"strings"
+
 	"github.com/accreativesoft/go-core/coredto"
+	"github.com/accreativesoft/go-core/coreerror"
+	"github.com/accreativesoft/go-core/coremsg"
 	"github.com/accreativesoft/go-core/corereflect"
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
 
@@ -16,6 +21,27 @@ func (service *Service) Iniciar(entidadRef interface{}) error {
 }
 
 func (service *Service) Crear(entidadRef interface{}) error {
+	//v := reflect.ValueOf(entidadRef).Elem()
+	//v.Set(reflect.Zero(v.Type()))
+	ok, e := corereflect.HasField(entidadRef, "Activo")
+	if e != nil {
+		log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+		return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
+	}
+
+	datatype, e := corereflect.GetFieldType(entidadRef, "Activo")
+	if e != nil {
+		log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+		return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
+	}
+
+	if ok && strings.Compare(datatype, "bool") == 0 {
+		e := corereflect.SetField(entidadRef, "Activo", true)
+		if e != nil {
+			log.Error().Err(e).Msg(coremsg.MSG_FALLA_INFRAESTRUCTURA)
+			return coreerror.NewError(coremsg.MSG_FALLA_INFRAESTRUCTURA, "")
+		}
+	}
 	return nil
 }
 

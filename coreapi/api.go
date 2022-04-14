@@ -37,7 +37,7 @@ func (api *Api) InitRoutes(app *fiber.App) {
 	private.Put("/numeroRegistros", api.numeroRegistros)
 	private.Put("/buscarPorId", api.buscarPorId)
 	private.Put("/cargarDetalle", api.cargarDetalle)
-	private.Put("/getEntidad", api.GetEntidad)
+	private.Put("/getEntidad", api.getEntidad)
 	private.Put("/getEntidadList", api.getEntidadList)
 	private.Put("/getObjetoList", api.getObjetoList)
 	private.Put("/getObjeto", api.getObjeto)
@@ -60,7 +60,7 @@ func GenerarToken(autenticacion Autenticacion) (string, int64, error) {
 func (api *Api) crear(ctx *fiber.Ctx) error {
 
 	// Recupero la referencia del objeto
-	objectRef, e := api.getObjectRef(ctx)
+	objectRef, e := api.GetObjectRef(ctx)
 	if e != nil {
 		return e
 	}
@@ -77,7 +77,7 @@ func (api *Api) crear(ctx *fiber.Ctx) error {
 func (api *Api) insertar(ctx *fiber.Ctx) error {
 
 	// Recupero la referencia del objeto
-	objectRef, e := api.getObjectRef(ctx)
+	objectRef, e := api.GetObjectRef(ctx)
 	if e != nil {
 		return e
 	}
@@ -94,7 +94,7 @@ func (api *Api) insertar(ctx *fiber.Ctx) error {
 func (api *Api) eliminar(ctx *fiber.Ctx) error {
 
 	// Recupero la referencia del objeto
-	objectRef, e := api.getObjectRef(ctx)
+	objectRef, e := api.GetObjectRef(ctx)
 	if e != nil {
 		return e
 	}
@@ -111,7 +111,7 @@ func (api *Api) eliminar(ctx *fiber.Ctx) error {
 func (api *Api) actualizar(ctx *fiber.Ctx) error {
 
 	// Recupero la referencia del objeto
-	objectRef, e := api.getObjectRef(ctx)
+	objectRef, e := api.GetObjectRef(ctx)
 	if e != nil {
 		return e
 	}
@@ -128,7 +128,7 @@ func (api *Api) actualizar(ctx *fiber.Ctx) error {
 func (api *Api) guardar(ctx *fiber.Ctx) error {
 
 	// Recupero la referencia del objeto
-	objectRef, e := api.getObjectRef(ctx)
+	objectRef, e := api.GetObjectRef(ctx)
 	if e != nil {
 		return e
 	}
@@ -202,7 +202,7 @@ func (api *Api) numeroRegistros(ctx *fiber.Ctx) error {
 func (api *Api) buscarPorId(ctx *fiber.Ctx) error {
 
 	//Ejecuto
-	objectRef, e := api.getObjectRef(ctx)
+	objectRef, e := api.GetObjectRef(ctx)
 	if e != nil {
 		return e
 	}
@@ -219,7 +219,7 @@ func (api *Api) buscarPorId(ctx *fiber.Ctx) error {
 func (api *Api) cargarDetalle(ctx *fiber.Ctx) error {
 
 	//Ejecuto
-	objectRef, e := api.getObjectRef(ctx)
+	objectRef, e := api.GetObjectRef(ctx)
 	if e != nil {
 		return e
 	}
@@ -233,7 +233,7 @@ func (api *Api) cargarDetalle(ctx *fiber.Ctx) error {
 	return ctx.JSON(objectRef)
 }
 
-func (api *Api) GetEntidad(ctx *fiber.Ctx) error {
+func (api *Api) getEntidad(ctx *fiber.Ctx) error {
 
 	//Recupero el tipo elemento
 	typeObject := reflect.TypeOf(api.EntidadRef).Elem()
@@ -325,7 +325,7 @@ func (api *Api) getObjeto(ctx *fiber.Ctx) error {
 	return ctx.JSON(listaRef)
 }
 
-func (api *Api) getObjectRef(ctx *fiber.Ctx) (interface{}, error) {
+func (api *Api) GetObjectRef(ctx *fiber.Ctx) (interface{}, error) {
 
 	//Recupero el tipo elemento
 	typeObject := reflect.TypeOf(api.EntidadRef).Elem()

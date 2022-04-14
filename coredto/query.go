@@ -13,7 +13,7 @@ type Query struct {
 }
 
 func (query *Query) AddCampos(campos ...string) {
-	query.Campos = campos
+	query.Campos = append(query.Campos, campos...)
 }
 
 func (query *Query) AddCampo(campo string) {
