@@ -414,7 +414,6 @@ func GetJoins(entityRef interface{}, query coredto.Query) (*orderedmap.OrderedMa
 						//Si es una referencia de un arrglo rrecupeta el elemnte para obtener el typr
 						items := reflect.ValueOf(u)
 						datatype := items.Index(0).Type()
-						fmt.Println(datatype)
 						u = reflect.New(datatype).Interface()
 						isSlice = true
 					}
