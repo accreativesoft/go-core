@@ -1,8 +1,9 @@
 package coredto
 
 type Config struct {
-	DatabaseConfig DatabaseConfig `json:"databaseConfig,omitempty"`
-	LogConfig      LogConfig      `json:"logConfig,omitempty"`
+	DatabaseConfig  DatabaseConfig  `json:"databaseConfig,omitempty"`
+	LogConfig       LogConfig       `json:"logConfig,omitempty"`
+	ApiCliSegConfig ApiCliSegConfig `json:"apiCliSegConfig,omitempty"`
 }
 
 type DatabaseConfig struct {
@@ -27,4 +28,11 @@ type LogConfig struct {
 	MaxBackups int    `json:"maxBackups,omitempty"`
 	MaxAge     int    `json:"maxAge,omitempty"`
 	Compress   bool   `json:"compress,omitempty"`
+}
+
+type ApiCliSegConfig struct {
+	Uri      string `json:"uri,omitempty"`
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
+	Token    string `json:"token,omitempty"`
 }

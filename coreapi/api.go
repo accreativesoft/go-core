@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"reflect"
 
+	"github.com/accreativesoft/go-core/corecons"
 	"github.com/accreativesoft/go-core/coredto"
 	"github.com/accreativesoft/go-core/coreerror"
 	"github.com/accreativesoft/go-core/coremsg"
@@ -12,8 +13,6 @@ import (
 	jwtware "github.com/gofiber/jwt/v3"
 	"github.com/rs/zerolog/log"
 )
-
-const jwtSecret = "asecret"
 
 type Api struct {
 	EntidadListaRef interface{}
@@ -25,7 +24,7 @@ type Api struct {
 func (api *Api) InitRoutes(app *fiber.App) {
 	private := app.Group(api.Uri)
 	private.Use(jwtware.New(jwtware.Config{
-		SigningKey: []byte(jwtSecret),
+		SigningKey: []byte(corecons.JWT_SECRET),
 	}))
 	private.Put("/crear", api.crear)
 	private.Put("/insertar", api.insertar)
@@ -250,7 +249,7 @@ func (api *Api) getEntidad(ctx *fiber.Ctx) error {
 	}
 
 	//Ejecuto el servicio
-	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "Get", objectRef, query)
+	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "GetEntidad", objectRef, query)
 	if e != nil {
 		return e
 	}
