@@ -390,7 +390,7 @@ func (apiClient *ApiClient) ConsumeApi(httpMethod string, url string, jsonBytes 
 	}
 	request.Header.Add("Accept", "application/json; charset=utf-8")
 	request.Header.Add("Content-Type", "application/json; charset=utf-8")
-	request.Header.Add("Authorization", apiClient.Token)
+	request.Header.Add("Authorization", "Bearer "+apiClient.Token)
 
 	//Creacion de cliente rest y ejecucion
 	client := &http.Client{}

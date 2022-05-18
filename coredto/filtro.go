@@ -7,22 +7,19 @@ type Filtro struct {
 	GrupoAndOr string      `json:"grupoAndOr,omitempty"`
 }
 
-func (filtro *Filtro) NewFiltro(campo string, operador string, valor interface{}) {
+func NewFiltro(campo string, operador string, valor interface{}) Filtro {
+	filtro := Filtro{}
 	filtro.Campo = campo
 	filtro.Operador = operador
 	filtro.Valor = valor
+	return filtro
 }
 
-func (filtro *Filtro) NewFiltroGrupoAnd(campo string, operador string, valor interface{}, grupo string) {
+func NewFiltroGrupo(campo string, operador string, valor interface{}, grupo string) Filtro {
+	filtro := Filtro{}
 	filtro.Campo = campo
 	filtro.Operador = operador
 	filtro.Valor = valor
 	filtro.GrupoAndOr = grupo
-}
-
-func (filtro *Filtro) NewFiltroGrupoOr(campo string, operador string, valor interface{}, grupo string) {
-	filtro.Campo = campo
-	filtro.Operador = operador
-	filtro.Valor = valor
-	filtro.GrupoAndOr = grupo
+	return filtro
 }

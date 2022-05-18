@@ -27,21 +27,18 @@ func (query *Query) AddOrden(campo string, orden int) {
 }
 
 func (query *Query) AddFiltro(campo string, operador string, valor interface{}) {
-	filtroTmp := *new(Filtro)
-	filtroTmp.NewFiltro(campo, operador, valor)
+	filtroTmp := NewFiltro(campo, operador, valor)
 	query.Filtros = append(query.Filtros, filtroTmp)
 }
 
 func (query *Query) AddFiltroGrupoAnd(campo string, operador string, valor interface{}, grupo string) {
-	filtroTmp := *new(Filtro)
-	filtroTmp.NewFiltroGrupoAnd(campo, operador, valor, "AND~"+grupo+"~"+strconv.Itoa(query.Contador))
+	filtroTmp := NewFiltroGrupo(campo, operador, valor, "AND~"+grupo+"~"+strconv.Itoa(query.Contador))
 	query.Filtros = append(query.Filtros, filtroTmp)
 	query.Contador++
 }
 
 func (query *Query) AddFiltroGrupoOr(campo string, operador string, valor interface{}, grupo string) {
-	filtroTmp := *new(Filtro)
-	filtroTmp.NewFiltroGrupoOr(campo, operador, valor, "OR~"+grupo+"~"+strconv.Itoa(query.Contador))
+	filtroTmp := NewFiltroGrupo(campo, operador, valor, "OR~"+grupo+"~"+strconv.Itoa(query.Contador))
 	query.Filtros = append(query.Filtros, filtroTmp)
 	query.Contador++
 }
