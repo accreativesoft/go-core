@@ -1,9 +1,14 @@
 package coredto
 
 type Config struct {
-	DatabaseConfig  DatabaseConfig  `json:"databaseConfig,omitempty"`
-	LogConfig       LogConfig       `json:"logConfig,omitempty"`
-	ApiCliSegConfig ApiCliSegConfig `json:"apiCliSegConfig,omitempty"`
+	AppConfig      AppConfig      `json:"appConfig,omitempty"`
+	DatabaseConfig DatabaseConfig `json:"databaseConfig,omitempty"`
+	LogConfig      LogConfig      `json:"logConfig,omitempty"`
+}
+
+type AppConfig struct {
+	Port          int         `json:"port,omitempty"`
+	ApiClientList []ApiClient `json:"apiClientList,omitempty"`
 }
 
 type DatabaseConfig struct {
@@ -30,7 +35,7 @@ type LogConfig struct {
 	Compress   bool   `json:"compress,omitempty"`
 }
 
-type ApiCliSegConfig struct {
+type ApiClient struct {
 	Uri      string `json:"uri,omitempty"`
 	Username string `json:"username,omitempty"`
 	Password string `json:"password,omitempty"`
