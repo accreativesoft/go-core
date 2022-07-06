@@ -23,6 +23,7 @@ type DatabaseConfig struct {
 	TimeZone     string `json:"timeZone,omitempty"`
 	MaxIdleConns int    `json:"maxIdleConns,omitempty"`
 	MaxOpenConns int    `json:"maxOpenConns,omitempty"`
+	Ssl          string `json:"ssl,omitempty"`
 }
 
 type LogConfig struct {
