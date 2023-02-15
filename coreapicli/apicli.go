@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"reflect"
 
 	"github.com/accreativesoft/go-core/coredto"
 	"github.com/accreativesoft/go-core/coreerror"
@@ -290,12 +289,8 @@ func (apiClient *ApiClient) GetEntidadList(listaRef interface{}, query coredto.Q
 		return e
 	}
 
-	//Creo objeto principal para llenar listado
-	elemType := reflect.TypeOf(listaRef).Elem()
-	objectRef := reflect.New(elemType).Interface()
-
 	//Cast del objeto
-	e = json.Unmarshal(bodyBytes, objectRef)
+	e = json.Unmarshal(bodyBytes, listaRef)
 	if e != nil {
 		log.Error().Err(e).Msg(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO)
 		return coreerror.NewError(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO, "")

@@ -8,17 +8,18 @@ import (
 	"github.com/accreativesoft/go-core/coredto"
 	"github.com/accreativesoft/go-core/coreerror"
 	"github.com/accreativesoft/go-core/coremsg"
-	"github.com/accreativesoft/go-core/corereflect"
+	"github.com/accreativesoft/go-core/coresrv"
 	"github.com/gofiber/fiber/v2"
 	jwtware "github.com/gofiber/jwt/v3"
 	"github.com/rs/zerolog/log"
+	"gorm.io/gorm"
 )
 
 type Api struct {
 	EntidadListaRef interface{}
 	EntidadRef      interface{}
-	ServiceRef      interface{}
 	Uri             string
+	Trn             *gorm.DB
 }
 
 func (api *Api) InitRoutes(app *fiber.App) {
@@ -65,8 +66,9 @@ func (api *Api) crear(ctx *fiber.Ctx) error {
 	}
 
 	//Ejecuto el servicio
-	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "Crear", objectRef)
-	if e != nil {
+	var srv coresrv.Service = coresrv.NewService(api.Trn, api.EntidadRef)
+
+	if e := srv.Crear(objectRef); e != nil {
 		return e
 	}
 
@@ -82,8 +84,9 @@ func (api *Api) insertar(ctx *fiber.Ctx) error {
 	}
 
 	//Ejecuto el servicio
-	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "Insertar", objectRef)
-	if e != nil {
+	var srv coresrv.Service = coresrv.NewService(api.Trn, api.EntidadRef)
+
+	if e := srv.Insertar(objectRef); e != nil {
 		return e
 	}
 
@@ -99,8 +102,9 @@ func (api *Api) eliminar(ctx *fiber.Ctx) error {
 	}
 
 	//Ejecuto el servicio
-	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "Eliminar", objectRef)
-	if e != nil {
+	var srv coresrv.Service = coresrv.NewService(api.Trn, api.EntidadRef)
+
+	if e := srv.Eliminar(objectRef); e != nil {
 		return e
 	}
 
@@ -116,8 +120,9 @@ func (api *Api) actualizar(ctx *fiber.Ctx) error {
 	}
 
 	//Ejecuto el servicio
-	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "Actualizar", objectRef)
-	if e != nil {
+	var srv coresrv.Service = coresrv.NewService(api.Trn, api.EntidadRef)
+
+	if e := srv.Actualizar(objectRef); e != nil {
 		return e
 	}
 
@@ -133,8 +138,9 @@ func (api *Api) guardar(ctx *fiber.Ctx) error {
 	}
 
 	//Ejecuto el servicio
-	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "Guardar", objectRef)
-	if e != nil {
+	var srv coresrv.Service = coresrv.NewService(api.Trn, api.EntidadRef)
+
+	if e := srv.Guardar(objectRef); e != nil {
 		return e
 	}
 
@@ -152,8 +158,9 @@ func (api *Api) actualizarLista(ctx *fiber.Ctx) error {
 	}
 
 	//Ejecuto el servicio
-	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "ActualizarLista", update)
-	if e != nil {
+	var srv coresrv.Service = coresrv.NewService(api.Trn, api.EntidadRef)
+
+	if e := srv.ActualizarLista(update); e != nil {
 		return e
 	}
 
@@ -171,8 +178,9 @@ func (api *Api) eliminarLista(ctx *fiber.Ctx) error {
 	}
 
 	//Ejecuto el servicio
-	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "EliminarLista", delete)
-	if e != nil {
+	var srv coresrv.Service = coresrv.NewService(api.Trn, api.EntidadRef)
+
+	if e := srv.EliminarLista(delete); e != nil {
 		return e
 	}
 
@@ -190,7 +198,9 @@ func (api *Api) numeroRegistros(ctx *fiber.Ctx) error {
 	}
 
 	//Ejecuto el servicio
-	count, e := corereflect.InvokeFuncReturnValueAndError(api.ServiceRef, "NumeroRegistros", filtros)
+	var srv coresrv.Service = coresrv.NewService(api.Trn, api.EntidadRef)
+
+	count, e := srv.NumeroRegistros(filtros)
 	if e != nil {
 		return e
 	}
@@ -207,8 +217,9 @@ func (api *Api) buscarPorId(ctx *fiber.Ctx) error {
 	}
 
 	//Ejecuto el servicio
-	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "BuscarPorId", objectRef)
-	if e != nil {
+	var srv coresrv.Service = coresrv.NewService(api.Trn, api.EntidadRef)
+
+	if e := srv.BuscarPorId(objectRef); e != nil {
 		return e
 	}
 
@@ -224,8 +235,9 @@ func (api *Api) cargarDetalle(ctx *fiber.Ctx) error {
 	}
 
 	//Ejecuto el servicio
-	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "CargarDetalle", objectRef)
-	if e != nil {
+	var srv coresrv.Service = coresrv.NewService(api.Trn, api.EntidadRef)
+
+	if e := srv.CargarDetalle(objectRef); e != nil {
 		return e
 	}
 
@@ -242,15 +254,16 @@ func (api *Api) getEntidad(ctx *fiber.Ctx) error {
 
 	//Cast del objeto
 	query := coredto.Query{}
-	e := json.Unmarshal(ctx.Body(), &query)
-	if e != nil {
+
+	if e := json.Unmarshal(ctx.Body(), &query); e != nil {
 		log.Error().Err(e).Msg(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO)
 		return coreerror.NewError(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO, "")
 	}
 
 	//Ejecuto el servicio
-	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "GetEntidad", objectRef, query)
-	if e != nil {
+	var srv coresrv.Service = coresrv.NewService(api.Trn, api.EntidadRef)
+
+	if e := srv.GetEntidad(objectRef, query); e != nil {
 		return e
 	}
 
@@ -265,15 +278,16 @@ func (api *Api) getEntidadList(ctx *fiber.Ctx) error {
 
 	//Cast del objeto
 	query := coredto.Query{}
-	e := json.Unmarshal(ctx.Body(), &query)
-	if e != nil {
+
+	if e := json.Unmarshal(ctx.Body(), &query); e != nil {
 		log.Error().Err(e).Msg(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO)
 		return coreerror.NewError(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO, "")
 	}
 
 	//Ejecuto el servicio
-	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "GetEntidadList", objectRef, query)
-	if e != nil {
+	var srv coresrv.Service = coresrv.NewService(api.Trn, api.EntidadRef)
+
+	if e := srv.GetEntidadList(objectRef, query); e != nil {
 		return e
 	}
 
@@ -287,19 +301,19 @@ func (api *Api) getObjetoList(ctx *fiber.Ctx) error {
 
 	//Cast del objeto
 	query := coredto.Query{}
-	e := json.Unmarshal(ctx.Body(), &query)
-	if e != nil {
+
+	if e := json.Unmarshal(ctx.Body(), &query); e != nil {
 		log.Error().Err(e).Msg(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO)
 		return coreerror.NewError(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO, "")
 	}
 
 	//Ejecuto el servicio
-	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "GetObjetoList", &listaRef, query)
-	if e != nil {
-		return e
-	}
+	var srv coresrv.Service = coresrv.NewService(api.Trn, api.EntidadRef)
+
+	srv.GetObjetoList(&listaRef, query)
 
 	return ctx.JSON(listaRef)
+
 }
 
 func (api *Api) getObjeto(ctx *fiber.Ctx) error {
@@ -309,15 +323,16 @@ func (api *Api) getObjeto(ctx *fiber.Ctx) error {
 
 	//Cast del objeto
 	query := coredto.Query{}
-	e := json.Unmarshal(ctx.Body(), &query)
-	if e != nil {
+
+	if e := json.Unmarshal(ctx.Body(), &query); e != nil {
 		log.Error().Err(e).Msg(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO)
 		return coreerror.NewError(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO, "")
 	}
 
 	//Ejecuto el servicio
-	e = corereflect.InvokeFuncReturnError(api.ServiceRef, "GetObjeto", &listaRef, query)
-	if e != nil {
+	var srv coresrv.Service = coresrv.NewService(api.Trn, api.EntidadRef)
+
+	if e := srv.GetObjeto(&listaRef, query); e != nil {
 		return e
 	}
 
@@ -333,8 +348,8 @@ func (api *Api) GetObjectRef(ctx *fiber.Ctx) (interface{}, error) {
 	objectRef := reflect.New(typeObject).Interface()
 
 	//Cast del objeto
-	e := json.Unmarshal(ctx.Body(), objectRef)
-	if e != nil {
+
+	if e := json.Unmarshal(ctx.Body(), objectRef); e != nil {
 		log.Error().Err(e).Msg(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO)
 		return nil, coreerror.NewError(coremsg.MSG_ERROR_CONVERTIR_JSON_A_OBJECTO, "")
 	}

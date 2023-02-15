@@ -3,6 +3,7 @@ package coresrv
 import (
 	"strings"
 
+	"github.com/accreativesoft/go-core/coredao"
 	"github.com/accreativesoft/go-core/coredto"
 	"github.com/accreativesoft/go-core/coreerror"
 	"github.com/accreativesoft/go-core/coremsg"
@@ -11,16 +12,38 @@ import (
 	"gorm.io/gorm"
 )
 
-type Service struct {
-	EntidadRef interface{}
-	Trn        *gorm.DB
+type Service interface {
+	Iniciar(entidadRef interface{}) error
+	Crear(entidadRef interface{}) error
+	Insertar(entidadRef interface{}) error
+	Actualizar(entidadRef interface{}) error
+	Eliminar(entidadRef interface{}) error
+	Guardar(entidadRef interface{}) error
+	ActualizarLista(update coredto.Update) error
+	EliminarLista(delete coredto.Delete) error
+	NumeroRegistros(filtros []coredto.Filtro) (int, error)
+	BuscarPorId(entidadRef interface{}) error
+	CargarDetalle(entidadRef interface{}) error
+	GetEntidad(entidadRef interface{}, query coredto.Query) error
+	GetEntidadList(listaRef interface{}, query coredto.Query) error
+	GetObjetoList(listaRef *[]interface{}, query coredto.Query) error
+	GetObjeto(listaRef *[]interface{}, query coredto.Query) error
 }
 
-func (service *Service) Iniciar(entidadRef interface{}) error {
+type ServiceImpl struct {
+	Dao coredao.Dao
+}
+
+func NewService(trn *gorm.DB, entidadRef interface{}) *ServiceImpl {
+	var dao coredao.Dao = coredao.NewDao(trn, entidadRef)
+	return &ServiceImpl{Dao: dao}
+}
+
+func (service *ServiceImpl) Iniciar(entidadRef interface{}) error {
 	return nil
 }
 
-func (service *Service) Crear(entidadRef interface{}) error {
+func (service *ServiceImpl) Crear(entidadRef interface{}) error {
 	//v := reflect.ValueOf(entidadRef).Elem()
 	//v.Set(reflect.Zero(v.Type()))
 	ok, e := corereflect.HasField(entidadRef, "Activo")
@@ -45,55 +68,54 @@ func (service *Service) Crear(entidadRef interface{}) error {
 	return nil
 }
 
-func (service *Service) Insertar(entidadRef interface{}) error {
-	return corereflect.InvokeFuncReturnError(service.EntidadRef, "Insertar", service.Trn, entidadRef)
+func (service *ServiceImpl) Insertar(entidadRef interface{}) error {
+	return service.Dao.Insertar(entidadRef)
 }
 
-func (service *Service) Actualizar(entidadRef interface{}) error {
-	return corereflect.InvokeFuncReturnError(service.EntidadRef, "Actualizar", service.Trn, entidadRef)
+func (service *ServiceImpl) Actualizar(entidadRef interface{}) error {
+	return service.Dao.Actualizar(entidadRef)
 }
 
-func (service *Service) Eliminar(entidadRef interface{}) error {
-	return corereflect.InvokeFuncReturnError(service.EntidadRef, "Eliminar", service.Trn, entidadRef)
+func (service *ServiceImpl) Eliminar(entidadRef interface{}) error {
+	return service.Dao.Eliminar(entidadRef)
 }
 
-func (service *Service) Guardar(entidadRef interface{}) error {
-	return corereflect.InvokeFuncReturnError(service.EntidadRef, "Guardar", service.Trn, entidadRef)
+func (service *ServiceImpl) Guardar(entidadRef interface{}) error {
+	return service.Dao.Guardar(entidadRef)
 }
 
-func (service *Service) ActualizarLista(update coredto.Update) error {
-	return corereflect.InvokeFuncReturnError(service.EntidadRef, "ActualizarLista", service.Trn, service.EntidadRef, update)
+func (service *ServiceImpl) ActualizarLista(update coredto.Update) error {
+	return service.Dao.ActualizarLista(service.Dao.GetEntidadRef(), update)
 }
 
-func (service *Service) EliminarLista(delete coredto.Delete) error {
-	return corereflect.InvokeFuncReturnError(service.EntidadRef, "EliminarLista", service.Trn, service.EntidadRef, delete)
+func (service *ServiceImpl) EliminarLista(delete coredto.Delete) error {
+	return service.Dao.EliminarLista(service.Dao.GetEntidadRef(), delete)
 }
 
-func (service *Service) NumeroRegistros(filtros []coredto.Filtro) (int, error) {
-	v, e := corereflect.InvokeFuncReturnValueAndError(service.EntidadRef, "NumeroRegistros", service.Trn, service.EntidadRef, filtros)
-	return v.(int), e
+func (service *ServiceImpl) NumeroRegistros(filtros []coredto.Filtro) (int, error) {
+	return service.Dao.NumeroRegistros(filtros)
 }
 
-func (service *Service) BuscarPorId(entidadRef interface{}) error {
-	return corereflect.InvokeFuncReturnError(service.EntidadRef, "BuscarPorId", service.Trn, entidadRef)
+func (service *ServiceImpl) BuscarPorId(entidadRef interface{}) error {
+	return service.Dao.BuscarPorId(entidadRef)
 }
 
-func (service *Service) CargarDetalle(entidadRef interface{}) error {
-	return corereflect.InvokeFuncReturnError(service.EntidadRef, "CargarDetalle", service.Trn, entidadRef)
+func (service *ServiceImpl) CargarDetalle(entidadRef interface{}) error {
+	return service.Dao.CargarDetalle(entidadRef)
 }
 
-func (service *Service) GetEntidad(entidadRef interface{}, query coredto.Query) error {
-	return corereflect.InvokeFuncReturnError(service.EntidadRef, "GetEntidad", service.Trn, entidadRef, query)
+func (service *ServiceImpl) GetEntidad(entidadRef interface{}, query coredto.Query) error {
+	return service.Dao.GetEntidad(entidadRef, query)
 }
 
-func (service *Service) GetEntidadList(listaRef interface{}, query coredto.Query) error {
-	return corereflect.InvokeFuncReturnError(service.EntidadRef, "GetEntidadList", service.Trn, service.EntidadRef, query, listaRef)
+func (service *ServiceImpl) GetEntidadList(listaRef interface{}, query coredto.Query) error {
+	return service.Dao.GetEntidadList(service.Dao.GetEntidadRef(), query, listaRef)
 }
 
-func (service *Service) GetObjetoList(listaRef interface{}, query coredto.Query) error {
-	return corereflect.InvokeFuncReturnError(service.EntidadRef, "GetObjetoList", service.Trn, service.EntidadRef, query, listaRef)
+func (service *ServiceImpl) GetObjetoList(listaRef *[]interface{}, query coredto.Query) error {
+	return service.Dao.GetObjetoList(service.Dao.GetEntidadRef(), query, listaRef)
 }
 
-func (service *Service) GetObjeto(listaRef interface{}, query coredto.Query) error {
-	return corereflect.InvokeFuncReturnError(service.EntidadRef, "GetObjeto", service.Trn, service.EntidadRef, query, listaRef)
+func (service *ServiceImpl) GetObjeto(listaRef *[]interface{}, query coredto.Query) error {
+	return service.Dao.GetObjeto(service.Dao.GetEntidadRef(), query, listaRef)
 }
