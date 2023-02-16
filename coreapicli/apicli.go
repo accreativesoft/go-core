@@ -12,14 +12,43 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type ApiClient struct {
+type ApiClient interface {
+	Crear(entidadRef interface{}) error
+	Insertar(entidadRef interface{}) error
+	Eliminar(entidadRef interface{}) error
+	Actualizar(entidadRef interface{}) error
+	Guardar(entidadRef interface{}) error
+	ActualizarLista(update coredto.Update) error
+	EliminarLista(delete coredto.Delete) error
+	NumeroRegistros(filtros []coredto.Filtro) (int, error)
+	BuscarPorId(entidadRef interface{}) error
+	CargarDetalle(entidadRef interface{}) error
+	GetEntidad(entidadRef interface{}, query coredto.Query) error
+	GetEntidadList(listaRef interface{}, query coredto.Query) error
+	GetObjetoList(listaRef interface{}, query coredto.Query) error
+	GetObjeto(listaRef interface{}, query coredto.Query) error
+	GetObjectRef(entidadRef interface{}, jsonBytes []byte) error
+	GetJsonBytes(entidadRef interface{}) ([]byte, error)
+	ConsumeApi(httpMethod string, url string, jsonBytes []byte) ([]byte, error)
+	GetUri() string
+}
+
+type ApiClientImpl struct {
 	EntidadListaRef interface{}
 	EntidadRef      interface{}
 	Token           string
 	Uri             string
 }
 
-func (apiClient *ApiClient) Crear(entidadRef interface{}) error {
+func NewApiClient(uri string, token string, entidadRef interface{}, entidadListaRef interface{}) *ApiClientImpl {
+	return &ApiClientImpl{Uri: uri, Token: token, EntidadRef: entidadRef, EntidadListaRef: entidadListaRef}
+}
+
+func (apiClient *ApiClientImpl) GetUri() string {
+	return apiClient.Uri
+}
+
+func (apiClient *ApiClientImpl) Crear(entidadRef interface{}) error {
 
 	//Transformo mi entidad  a un json de bytes
 	jsonBytes, e := apiClient.GetJsonBytes(entidadRef)
@@ -42,7 +71,7 @@ func (apiClient *ApiClient) Crear(entidadRef interface{}) error {
 	return nil
 }
 
-func (apiClient *ApiClient) Insertar(entidadRef interface{}) error {
+func (apiClient *ApiClientImpl) Insertar(entidadRef interface{}) error {
 
 	//Transformo mi entidad  a un json de bytes
 	jsonBytes, e := apiClient.GetJsonBytes(entidadRef)
@@ -65,7 +94,7 @@ func (apiClient *ApiClient) Insertar(entidadRef interface{}) error {
 	return nil
 }
 
-func (apiClient *ApiClient) Eliminar(entidadRef interface{}) error {
+func (apiClient *ApiClientImpl) Eliminar(entidadRef interface{}) error {
 
 	//Transformo mi entidad  a un json de bytes
 	jsonBytes, e := apiClient.GetJsonBytes(entidadRef)
@@ -88,7 +117,7 @@ func (apiClient *ApiClient) Eliminar(entidadRef interface{}) error {
 	return nil
 }
 
-func (apiClient *ApiClient) Actualizar(entidadRef interface{}) error {
+func (apiClient *ApiClientImpl) Actualizar(entidadRef interface{}) error {
 
 	//Transformo mi entidad  a un json de bytes
 	jsonBytes, e := apiClient.GetJsonBytes(entidadRef)
@@ -111,7 +140,7 @@ func (apiClient *ApiClient) Actualizar(entidadRef interface{}) error {
 	return nil
 }
 
-func (apiClient *ApiClient) Guardar(entidadRef interface{}) error {
+func (apiClient *ApiClientImpl) Guardar(entidadRef interface{}) error {
 
 	//Transformo mi entidad  a un json de bytes
 	jsonBytes, e := apiClient.GetJsonBytes(entidadRef)
@@ -134,7 +163,7 @@ func (apiClient *ApiClient) Guardar(entidadRef interface{}) error {
 	return nil
 }
 
-func (apiClient *ApiClient) ActualizarLista(update coredto.Update) error {
+func (apiClient *ApiClientImpl) ActualizarLista(update coredto.Update) error {
 
 	//Transformo mi entidad  a un json de bytes
 	jsonBytes, e := apiClient.GetJsonBytes(update)
@@ -158,7 +187,7 @@ func (apiClient *ApiClient) ActualizarLista(update coredto.Update) error {
 	return nil
 }
 
-func (apiClient *ApiClient) EliminarLista(delete coredto.Delete) error {
+func (apiClient *ApiClientImpl) EliminarLista(delete coredto.Delete) error {
 
 	//Transformo mi entidad  a un json de bytes
 	jsonBytes, e := apiClient.GetJsonBytes(delete)
@@ -181,7 +210,7 @@ func (apiClient *ApiClient) EliminarLista(delete coredto.Delete) error {
 	return nil
 }
 
-func (apiClient *ApiClient) NumeroRegistros(filtros []coredto.Filtro) (int, error) {
+func (apiClient *ApiClientImpl) NumeroRegistros(filtros []coredto.Filtro) (int, error) {
 
 	//Transformo mi entidad  a un json de bytes
 	jsonBytes, e := apiClient.GetJsonBytes(filtros)
@@ -206,7 +235,7 @@ func (apiClient *ApiClient) NumeroRegistros(filtros []coredto.Filtro) (int, erro
 	return num, nil
 }
 
-func (apiClient *ApiClient) BuscarPorId(entidadRef interface{}) error {
+func (apiClient *ApiClientImpl) BuscarPorId(entidadRef interface{}) error {
 
 	//Transformo mi entidad  a un json de bytes
 	jsonBytes, e := apiClient.GetJsonBytes(entidadRef)
@@ -229,7 +258,7 @@ func (apiClient *ApiClient) BuscarPorId(entidadRef interface{}) error {
 	return nil
 }
 
-func (apiClient *ApiClient) CargarDetalle(entidadRef interface{}) error {
+func (apiClient *ApiClientImpl) CargarDetalle(entidadRef interface{}) error {
 
 	//Transformo mi entidad  a un json de bytes
 	jsonBytes, e := apiClient.GetJsonBytes(entidadRef)
@@ -252,7 +281,7 @@ func (apiClient *ApiClient) CargarDetalle(entidadRef interface{}) error {
 	return nil
 }
 
-func (apiClient *ApiClient) GetEntidad(entidadRef interface{}, query coredto.Query) error {
+func (apiClient *ApiClientImpl) GetEntidad(entidadRef interface{}, query coredto.Query) error {
 
 	//Transformo mi entidad  a un json de bytes
 	jsonBytes, e := apiClient.GetJsonBytes(query)
@@ -275,7 +304,7 @@ func (apiClient *ApiClient) GetEntidad(entidadRef interface{}, query coredto.Que
 	return nil
 }
 
-func (apiClient *ApiClient) GetEntidadList(listaRef interface{}, query coredto.Query) error {
+func (apiClient *ApiClientImpl) GetEntidadList(listaRef interface{}, query coredto.Query) error {
 
 	//Transformo mi entidad  a un json de bytes
 	jsonBytes, e := apiClient.GetJsonBytes(query)
@@ -299,7 +328,7 @@ func (apiClient *ApiClient) GetEntidadList(listaRef interface{}, query coredto.Q
 	return nil
 }
 
-func (apiClient *ApiClient) GetObjetoList(listaRef interface{}, query coredto.Query) error {
+func (apiClient *ApiClientImpl) GetObjetoList(listaRef interface{}, query coredto.Query) error {
 
 	//Transformo mi entidad  a un json de bytes
 	jsonBytes, e := apiClient.GetJsonBytes(query)
@@ -323,7 +352,7 @@ func (apiClient *ApiClient) GetObjetoList(listaRef interface{}, query coredto.Qu
 	return nil
 }
 
-func (apiClient *ApiClient) GetObjeto(listaRef interface{}, query coredto.Query) error {
+func (apiClient *ApiClientImpl) GetObjeto(listaRef interface{}, query coredto.Query) error {
 
 	//Transformo mi entidad  a un json de bytes
 	jsonBytes, e := apiClient.GetJsonBytes(query)
@@ -347,7 +376,7 @@ func (apiClient *ApiClient) GetObjeto(listaRef interface{}, query coredto.Query)
 	return nil
 }
 
-func (apiClient *ApiClient) GetObjectRef(entidadRef interface{}, jsonBytes []byte) error {
+func (apiClient *ApiClientImpl) GetObjectRef(entidadRef interface{}, jsonBytes []byte) error {
 
 	//Cast del objeto
 	e := json.Unmarshal(jsonBytes, entidadRef)
@@ -361,7 +390,7 @@ func (apiClient *ApiClient) GetObjectRef(entidadRef interface{}, jsonBytes []byt
 
 }
 
-func (apiClient *ApiClient) GetJsonBytes(entidadRef interface{}) ([]byte, error) {
+func (apiClient *ApiClientImpl) GetJsonBytes(entidadRef interface{}) ([]byte, error) {
 
 	jsonRequest, e := json.Marshal(entidadRef)
 	if e != nil {
@@ -375,7 +404,7 @@ func (apiClient *ApiClient) GetJsonBytes(entidadRef interface{}) ([]byte, error)
 
 }
 
-func (apiClient *ApiClient) ConsumeApi(httpMethod string, url string, jsonBytes []byte) ([]byte, error) {
+func (apiClient *ApiClientImpl) ConsumeApi(httpMethod string, url string, jsonBytes []byte) ([]byte, error) {
 
 	//Creacion del request y cabeceras
 	request, e := http.NewRequest(httpMethod, url, bytes.NewBuffer(jsonBytes))
@@ -412,7 +441,7 @@ func (apiClient *ApiClient) ConsumeApi(httpMethod string, url string, jsonBytes 
 
 }
 
-func (apiClient *ApiClient) Consume(httpMethod string, url string, header http.Header, jsonBytes []byte) ([]byte, error) {
+func Consume(httpMethod string, url string, header http.Header, jsonBytes []byte) ([]byte, error) {
 
 	//Creacion del request y cabeceras
 	request, e := http.NewRequest(httpMethod, url, bytes.NewBuffer(jsonBytes))

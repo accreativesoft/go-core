@@ -43,19 +43,9 @@ func (api *Api) InitRoutes(app *fiber.App) {
 	private.Put("/getObjeto", api.getObjeto)
 }
 
-/*
-func GenerarToken(autenticacion Autenticacion) (string, int64, error) {
-	exp := time.Now().Add(time.Minute * 30).Unix()
-	token := jwt.New(jwt.SigningMethodHS256)
-	claims := token.Claims.(jwt.MapClaims)
-	claims["user_id"] = autenticacion.Id
-	claims["exp"] = exp
-	t, err := token.SignedString([]byte(jwtSecret))
-	if err != nil {
-		return "", 0, err
-	}
-	return t, exp, nil
-}*/
+func NewApi(uri string, trn *gorm.DB, entidadRef interface{}, entidadListaRef interface{}) *Api {
+	return &Api{Uri: uri, Trn: trn, EntidadRef: entidadRef, EntidadListaRef: entidadListaRef}
+}
 
 func (api *Api) crear(ctx *fiber.Ctx) error {
 
@@ -310,7 +300,9 @@ func (api *Api) getObjetoList(ctx *fiber.Ctx) error {
 	//Ejecuto el servicio
 	var srv coresrv.Service = coresrv.NewService(api.Trn, api.EntidadRef)
 
-	srv.GetObjetoList(&listaRef, query)
+	if e := srv.GetObjetoList(&listaRef, query); e != nil {
+		return e
+	}
 
 	return ctx.JSON(listaRef)
 
